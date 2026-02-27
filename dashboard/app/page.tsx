@@ -14,7 +14,7 @@ export default function Dashboard() {
       console.log('Auto-Refresh ausgeführt um', new Date().toLocaleTimeString());
       setRefreshCount(prev => prev + 1);
 
-      const response = await fetch('http://127.0.0.1:8000/swarm', {
+      const response = await fetch('/swarm', {   // ← hier der wichtige relative Pfad
         cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
@@ -55,13 +55,7 @@ export default function Dashboard() {
     return `vor ${Math.round(seconds / 3600)} Stunden`;
   };
 
-  const currentDate = new Date().toLocaleDateString('de-DE', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
-
-  const shareText = `Mein AI-Schwarm hat gerade ${swarmData?.avgFit || 90}% für evolvierende Dark Energy berechnet!\n\n"${swarmData?.consensus || ''}"\n\nLive Dashboard: [Link später einfügen] #CosmicTruth42 #AISwarm`;
+  const shareText = `Mein AI-Schwarm hat gerade ${swarmData?.avgFit || 90}% für evolvierende Dark Energy berechnet!\n\n"${swarmData?.consensus || ''}"\n\nLive Dashboard: https://cosmic-swarm.vercel.app #CosmicTruth42 #AISwarm`;
 
   return (
     <div className="min-h-screen bg-black text-white p-8 font-mono">
@@ -71,9 +65,7 @@ export default function Dashboard() {
           <h1 className="text-6xl font-extrabold mb-2 bg-gradient-to-r from-purple-500 via-cyan-400 to-purple-500 bg-clip-text text-transparent">
             CosmicTruth42
           </h1>
-          <p className="text-gray-400 text-lg">
-            Grok's Cosmic Swarm • Live • {currentDate}
-          </p>
+          <p className="text-gray-400 text-lg">Grok's Cosmic Swarm • Live • 23. Februar 2026</p>
         </div>
 
         {/* Error */}

@@ -5,16 +5,10 @@ import re
 
 app = FastAPI(title="CosmicTruth42 Backend")
 
-# CORS – erlaubt Zugriff vom Vercel-Frontend und lokalem Test
+# CORS – erlaubt Zugriff vom Frontend (Vercel-Domain + localhost)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://cosmictruth42.vercel.app",
-        "https://*.vercel.app",          # alle Vercel-Subdomains (wichtig für Previews)
-        "http://localhost:3000",         # lokales Dashboard
-        "http://127.0.0.1:3000",
-        "*"                              # für Tests – später auf die ersten 3 beschränken
-    ],
+    allow_origins=["*"],  # für Tests; später auf deine Vercel-Domain beschränken
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -43,9 +37,5 @@ async def get_swarm():
         "insights": insights,
         "consensus": consensus,
         "avgFit": avg_fit,
-        "hash": "HZC3jjn5RcuQGr5nCbLPJQCY5Kkr35sfzybcBVWHqk1t"  # später dynamisch machen
+        "hash": "HZC3jjn5RcuQGr5nCbLPJQCY5Kkr35sfzybcBVWHqk1t"
     }
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
