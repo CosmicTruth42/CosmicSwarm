@@ -9,11 +9,12 @@ app = FastAPI(title="CosmicTruth42 Backend")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://cosmic-swarm.vercel.app",
         "https://cosmictruth42.vercel.app",
-        "https://*.vercel.app",          # alle Vercel-Subdomains (wichtig für Previews)
-        "http://localhost:3000",         # lokales Dashboard
+        "https://*.vercel.app",           # alle Vercel-Subdomains (wichtig für Previews & Aliases)
+        "http://localhost:3000",          # lokales Dashboard zum Testen
         "http://127.0.0.1:3000",
-        "*"                              # für Tests – später auf die ersten 3 beschränken
+        "*"                               # für Tests – später entfernen, wenn alles läuft
     ],
     allow_credentials=True,
     allow_methods=["*"],

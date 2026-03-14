@@ -2,12 +2,12 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/swarm.py",
-      "use": "@vercel/python"
+      "src": "package.json",
+      "use": "@vercel/next"
     },
     {
-      "src": "app/**",
-      "use": "@vercel/next"
+      "src": "api/swarm.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
@@ -17,7 +17,7 @@
     },
     {
       "src": "/.*",
-      "dest": "app/index.js"
+      "dest": "/"
     }
   ]
 }
