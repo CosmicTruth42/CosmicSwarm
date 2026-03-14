@@ -1,6 +1,4 @@
 fastapi
 uvicorn
 sympy
-re
-requests  # für arXiv/PubMed-Suche
-xml.etree.ElementTree  # standard, aber für Sicherheit
+requests
