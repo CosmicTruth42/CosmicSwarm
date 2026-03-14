@@ -2,4 +2,4 @@ fastapi
 uvicorn
 sympy
 requests
-solders  # für Solana-On-Chain (wenn du es nutzt)
+solders
