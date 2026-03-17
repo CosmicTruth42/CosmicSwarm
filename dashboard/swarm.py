@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import integrated_swarm
+import dashboard.integrated_swarm as integrated_swarm
 import re
 
 app = FastAPI(title="CosmicTruth42 Backend")
@@ -37,5 +37,7 @@ async def get_swarm():
         "insights": insights,
         "consensus": consensus,
         "avgFit": avg_fit,
-        "hash": "HZC3jjn5RcuQGr5nCbLPJQCY5Kkr35sfzybcBVWHqk1t"
+        "hash": "# On-Chain Logging vorübergehend deaktiviert (solders-Probleme)
+# onchain_logger.log_consensus(consensus)  # ← diese Zeile auskommentieren
+hash_value = "Test-Hash: " + "offline"  # später wieder aktivieren"
     }
