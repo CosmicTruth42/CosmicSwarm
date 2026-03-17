@@ -1,8 +1,5 @@
-# onchain_logger.py – On-Chain Logging vorübergehend deaktiviert (solders entfernt)
+# Dummy für onchain_logger.py – On-Chain deaktiviert
 
-def log_consensus(consensus_text):
-    # Nur Test-Modus – kein solders mehr
-    print(f"Test-Mode: {consensus_text}")
+def log_consensus(*args):
+    """Akzeptiert beliebig viele Argumente und tut nichts."""
     return "Test-Hash: offline"
-
-# Falls andere Dateien das importieren, funktioniert es jetzt
