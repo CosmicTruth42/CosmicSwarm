@@ -5,9 +5,15 @@ import re
 
 app = FastAPI(title="CosmicTruth42 Backend")
 
+# CORS – erlaubt Zugriff vom Vercel-Frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://cosmic-swarm.vercel.app",
+        "https://cosmic-swarm-backend-v2.onrender.com",
+        "http://localhost:3000",
+        "*"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -31,7 +37,6 @@ async def get_swarm():
     avg_fit = round(sum(fits) / len(fits)) if fits else 90
     consensus = "Starke Evidenz für evolvierende Dark Energy (basierend auf Kollision)" if avg_fit > 87 else "Weiterforschen, Tension bleibt"
     
-    # On-Chain komplett deaktiviert
     hash_value = "Test-Hash: offline"
     
     return {
