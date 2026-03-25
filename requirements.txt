@@ -4,3 +4,4 @@ sympy
 requests
 solders
 solana
+base58
