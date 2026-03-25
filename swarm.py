@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import integrated_swarm
 import re
-from onchain_logger import onchain   # <-- wichtig: ohne "dashboard."
+from onchain_logger import onchain   # ← wichtig: ohne "dashboard."
 
 app = FastAPI(title="CosmicTruth42 Backend")
 
