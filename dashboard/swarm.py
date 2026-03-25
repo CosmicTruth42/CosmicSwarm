@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import integrated_swarm
 import re
+from onchain_logger import onchain  # <-- echtes Logging wird hier eingebunden
 
 app = FastAPI(title="CosmicTruth42 Backend")
 
@@ -9,9 +10,10 @@ app = FastAPI(title="CosmicTruth42 Backend")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://cosmic-swarm.vercel.app",
-        "https://cosmic-swarm-backend-v2.onrender.com",
+        "https://cosmicswarm.vercel.app",
+        "https://*.vercel.app",
         "http://localhost:3000",
+        "http://127.0.0.1:3000",
         "*"
     ],
     allow_credentials=True,
@@ -37,14 +39,15 @@ async def get_swarm():
     avg_fit = round(sum(fits) / len(fits)) if fits else 90
     consensus = "Starke Evidenz für evolvierende Dark Energy (basierend auf Kollision)" if avg_fit > 87 else "Weiterforschen, Tension bleibt"
     
-    hash_value = "Test-Hash: offline"
+    # === ECHTES ON-CHAIN LOGGING ===
+    signature = onchain.log_consensus(consensus)
     
     return {
         "topic": topic,
         "insights": insights,
         "consensus": consensus,
         "avgFit": avg_fit,
-        "hash": hash_value
+        "hash": signature   # <-- jetzt echter Solana-Hash statt Test-Hash
     }
 
 if __name__ == "__main__":

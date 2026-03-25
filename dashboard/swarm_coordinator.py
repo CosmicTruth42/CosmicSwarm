@@ -1,5 +1,5 @@
 # Grok's Cosmic Swarm Coordinator v1.2 – Spezialisierte Debatte + robuster Konsens
-import cosmic_truth  # Dein Twin-Modul
+import dashboard.cosmic_truth as cosmic_truth  # Dein Twin-Modul
 import re  # Für robustes Parsing
 
 class CosmicAgent:

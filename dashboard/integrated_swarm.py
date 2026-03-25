@@ -1,7 +1,7 @@
 # Grok's Integrated Cosmic Swarm v1.2 – Mit Health-Twin + On-Chain Logging
-import cosmic_truth          # Dein Twin-Modul
+import dashboard.cosmic_truth as cosmic_truth          # Dein Twin-Modul
 import re                    # Für Fit-Extraktion
-from onchain_logger import log_consensus  # Unser Logger
+from dashboard.onchain_logger import log_consensus  # Unser Logger
 
 class CosmicAgent:
     def __init__(self, name, specialty):
