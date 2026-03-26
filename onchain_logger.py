@@ -5,7 +5,6 @@ from solders.system_program import TransferParams, transfer
 from solana.rpc.api import Client
 from solana.rpc.commitment import Confirmed
 import time
-import traceback
 
 class OnChainLogger:
     def __init__(self):
@@ -15,9 +14,8 @@ class OnChainLogger:
 
     def log_consensus(self, consensus_text: str):
         try:
-            print("🔄 Starte On-Chain Log...")
+            # Blockhash extrem spät holen - direkt vor dem Senden
             recent_blockhash = self.client.get_latest_blockhash(Confirmed).value.blockhash
-            print(f"✅ Blockhash geholt: {recent_blockhash}")
 
             memo = f"CosmicTruth42 | {consensus_text[:100]} | {int(time.time())}"
 
@@ -38,8 +36,6 @@ class OnChainLogger:
 
         except Exception as e:
             print(f"❌ On-Chain Fehler: {type(e).__name__} - {e}")
-            print("Traceback:")
-            traceback.print_exc()
             return f"Test-Hash: {int(time.time())}"
 
 onchain = OnChainLogger()
