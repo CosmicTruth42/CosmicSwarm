@@ -1,37 +1,45 @@
 from solders.keypair import Keypair
+from solders.transaction import VersionedTransaction
 from solders.message import Message
-from solders.transaction import Transaction
+from solders.system_program import TransferParams, transfer
 from solana.rpc.api import Client
-import base58
+from solana.rpc.commitment import Confirmed
 import time
 
-# Dein echter Private Key (CosmicTruth42 Wallet)
+# Dein echter Private Key
 PRIVATE_KEY_BASE58 = "2CSe7uUVE5WmTx1xUa1WjiW3syu5mk9W2anMAep3BRDvr6xwJdWobXDuuye1k64bqCm5i8qa13yEg2PEFBjgfp3w"
 
 class OnChainLogger:
     def __init__(self):
-        self.client = Client("https://api.mainnet-beta.solana.com")
+        # Devnet für Test (sicherer und schneller)
+        self.client = Client("https://api.devnet.solana.com")
         self.keypair = Keypair.from_base58_string(PRIVATE_KEY_BASE58)
-        print(f"✅ On-Chain Logger geladen für: {self.keypair.pubkey()}")
+        print(f"✅ On-Chain Logger gestartet für Wallet: {self.keypair.pubkey()}")
 
     def log_consensus(self, consensus_text: str):
         try:
-            # Kurze Nachricht als Memo
-            memo = f"CosmicTruth42 | {consensus_text[:100]} | {int(time.time())}"
+            memo = f"CosmicTruth42 | {consensus_text[:120]} | {int(time.time())}"
 
-            # Einfache Transaction mit Memo
-            tx = Transaction()
-            tx.add_memo(memo)
-            tx.sign([self.keypair])
+            # Einfache Transfer-Transaction mit Memo
+            ix = transfer(TransferParams(
+                from_pubkey=self.keypair.pubkey(),
+                to_pubkey=self.keypair.pubkey(),   # an sich selbst senden (0.0001 SOL)
+                lamports=100000
+            ))
+
+            recent_blockhash = self.client.get_latest_blockhash(Confirmed).value.blockhash
+            message = Message.new_with_blockhash([ix], self.keypair.pubkey(), recent_blockhash)
+            tx = VersionedTransaction(message, [self.keypair])
 
             result = self.client.send_transaction(tx)
             signature = result.value
 
-            print(f"✅ On-Chain Log erfolgreich! Signature: {signature}")
+            print(f"✅ ECHTER On-Chain Log gesendet! Signature: {signature}")
             return str(signature)
 
         except Exception as e:
-            print(f"Live Error: {e} – Fallback zu Test-Mode")
+            print(f"❌ On-Chain Fehler: {type(e).__name__} - {e}")
+            print("Fallback zu Test-Mode")
             return f"Test-Hash: {int(time.time())}"
 
 # Singleton
