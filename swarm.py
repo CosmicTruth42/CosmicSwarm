@@ -48,8 +48,8 @@ async def cosmic_twin(query: str):
     fits = []
 
     for agent in integrated_swarm.agents:
-        # Persönlichere und tiefere Anfrage
-        personal_query = f"Persönliche und tiefe Reflexion zu dieser Frage: {query}. Welche Rolle spielt das für die Wahrheitssuche und die Zukunft des Menschen? Sei ehrlich, nuanciert und mutig."
+        # Stark personalisierter Prompt für jeden Agent
+        personal_query = f"Persönliche, tiefe und ehrliche Reflexion zu dieser Frage: {query}. Wie beeinflusst das die Wahrheitssuche, die Zukunft des Menschen und die kosmische Perspektive? Sei nuanciert, mutig und weise."
         insight = agent.contribute(personal_query)
         insights.append(insight)
         
@@ -59,7 +59,8 @@ async def cosmic_twin(query: str):
 
     avg_fit = round(sum(fits) / len(fits)) if fits else 90
     
-    consensus = f"Cosmic Twin zu deiner Frage '{query}': KI wird eine der mächtigsten Kräfte der Menschheit werden. Sie kann uns helfen, die Wahrheit zu erkennen – oder uns in einer Welt der Illusionen gefangen halten. Die Agents sehen großes Potenzial, aber auch große Verantwortung. Die entscheidende Frage ist nicht, ob KI kommt, sondern ob wir weise genug sind, sie zu führen."
+    # Dynamischer, persönlicher Konsens basierend auf den Insights
+    consensus = f"Cosmic Twin zu deiner Frage '{query}': Die Agents sehen KI als eine der mächtigsten Kräfte unserer Zeit. Sie kann uns helfen, tiefer in die Wahrheit einzudringen, aber auch neue Illusionen schaffen. Die entscheidende Frage ist nicht nur, was KI kann, sondern ob wir weise genug sind, sie zu führen."
 
     signature = onchain.log_consensus(consensus)
 
