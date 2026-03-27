@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import integrated_swarm
 import re
-from onchain_logger import OnChainLogger   # ← nur die Klasse importieren
+from onchain_logger import OnChainLogger
 
 app = FastAPI(title="CosmicTruth42 Backend")
 
@@ -14,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Instanz einmalig erstellen
+# On-Chain Logger einmalig erstellen
 onchain = OnChainLogger()
 
 @app.get("/swarm")
@@ -35,11 +35,40 @@ async def get_swarm():
     avg_fit = round(sum(fits) / len(fits)) if fits else 90
     consensus = "Starke Evidenz für evolvierende Dark Energy (basierend auf Kollision)" if avg_fit > 87 else "Weiterforschen, Tension bleibt"
     
-    # ECHTES On-Chain Logging
     signature = onchain.log_consensus(consensus)
     
     return {
         "topic": topic,
+        "insights": insights,
+        "consensus": consensus,
+        "avgFit": avg_fit,
+        "hash": signature
+    }
+
+@app.get("/twin")
+async def cosmic_twin(query: str):
+    """Cosmic Twin – persönlicher Agent für deine Frage"""
+    if not query or len(query.strip()) < 3:
+        return {"error": "Bitte gib eine sinnvolle Frage ein."}
+    
+    insights = []
+    fits = []
+    
+    for agent in integrated_swarm.agents:
+        insight = agent.contribute(query)
+        insights.append(insight)
+        
+        fit_match = re.search(r'(\d+)%\s*Fit', insight)
+        if fit_match:
+            fits.append(float(fit_match.group(1)))
+    
+    avg_fit = round(sum(fits) / len(fits)) if fits else 90
+    consensus = "Starke Evidenz für evolvierende Dark Energy (basierend auf Kollision)" if avg_fit > 87 else "Weiterforschen, Tension bleibt"
+    
+    signature = onchain.log_consensus(consensus)
+    
+    return {
+        "query": query,
         "insights": insights,
         "consensus": consensus,
         "avgFit": avg_fit,
