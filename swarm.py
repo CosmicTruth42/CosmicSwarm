@@ -14,29 +14,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# On-Chain Logger einmalig erstellen
 onchain = OnChainLogger()
 
 @app.get("/swarm")
 async def get_swarm():
     topic = "ist dark energy konstant?"
-    
     insights = []
     fits = []
-    
     for agent in integrated_swarm.agents:
         insight = agent.contribute(topic)
         insights.append(insight)
-        
         fit_match = re.search(r'(\d+)%\s*Fit', insight)
         if fit_match:
             fits.append(float(fit_match.group(1)))
-    
     avg_fit = round(sum(fits) / len(fits)) if fits else 90
     consensus = "Starke Evidenz für evolvierende Dark Energy (basierend auf Kollision)" if avg_fit > 87 else "Weiterforschen, Tension bleibt"
-    
     signature = onchain.log_consensus(consensus)
-    
     return {
         "topic": topic,
         "insights": insights,
@@ -47,7 +40,7 @@ async def get_swarm():
 
 @app.get("/twin")
 async def cosmic_twin(query: str):
-    """Cosmic Twin – persönlicher Agent für deine Frage"""
+    """Cosmic Twin – persönlicher Agent für deine individuelle Frage"""
     if not query or len(query.strip()) < 3:
         return {"error": "Bitte gib eine sinnvolle Frage ein."}
     
@@ -55,7 +48,7 @@ async def cosmic_twin(query: str):
     fits = []
     
     for agent in integrated_swarm.agents:
-        insight = agent.contribute(query)
+        insight = agent.contribute(query)   # ← jetzt deine persönliche Frage
         insights.append(insight)
         
         fit_match = re.search(r'(\d+)%\s*Fit', insight)
@@ -63,7 +56,7 @@ async def cosmic_twin(query: str):
             fits.append(float(fit_match.group(1)))
     
     avg_fit = round(sum(fits) / len(fits)) if fits else 90
-    consensus = "Starke Evidenz für evolvierende Dark Energy (basierend auf Kollision)" if avg_fit > 87 else "Weiterforschen, Tension bleibt"
+    consensus = f"Cosmic Twin zu deiner Frage: {query} – { 'Starke persönliche Evidenz' if avg_fit > 87 else 'Tiefe Reflexion empfohlen' }"
     
     signature = onchain.log_consensus(consensus)
     
