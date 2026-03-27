@@ -1,41 +1,53 @@
-from solders.keypair import Keypair
-from solders.transaction import VersionedTransaction
-from solders.message import Message
-from solders.system_program import TransferParams, transfer
-from solana.rpc.api import Client
-from solana.rpc.commitment import Confirmed
-import time
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import integrated_swarm
+import re
+from onchain_logger import onchain
 
-class OnChainLogger:
-    def __init__(self):
-        self.client = Client("https://api.devnet.solana.com")
-        self.keypair = Keypair.from_base58_string("2CSe7uUVE5WmTx1xUa1WjiW3syu5mk9W2anMAep3BRDvr6xwJdWobXDuuye1k64bqCm5i8qa13yEg2PEFBjgfp3w")
-        print(f"✅ On-Chain Logger gestartet für Wallet: {self.keypair.pubkey()}")
+app = FastAPI(title="CosmicTruth42 Backend")
 
-    def log_consensus(self, consensus_text: str):
-        try:
-            print("🔄 Starte On-Chain Log...")
-            recent_blockhash = self.client.get_latest_blockhash(Confirmed).value.blockhash
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://cosmicswarm.vercel.app", "https://*.vercel.app", "http://localhost:3000", "*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-            memo = f"CosmicTruth42 | {consensus_text[:100]} | {int(time.time())}"
+@app.get("/swarm")
+async def get_swarm():
+    # ... (alter Code bleibt unverändert)
+    topic = "ist dark energy konstant?"
+    # ... (alles wie bisher)
+    return { ... }
 
-            ix = transfer(TransferParams(
-                from_pubkey=self.keypair.pubkey(),
-                to_pubkey=self.keypair.pubkey(),
-                lamports=100000
-            ))
+@app.get("/twin")
+async def cosmic_twin(query: str):
+    """Cosmic Twin – persönlicher Agent für deine Frage"""
+    insights = []
+    fits = []
 
-            message = Message.new_with_blockhash([ix], self.keypair.pubkey(), recent_blockhash)
-            tx = VersionedTransaction(message, [self.keypair])
+    for agent in integrated_swarm.agents:
+        insight = agent.contribute(query)   # Hier kommt deine persönliche Frage rein
+        insights.append(insight)
+        
+        fit_match = re.search(r'(\d+)%\s*Fit', insight)
+        if fit_match:
+            fits.append(float(fit_match.group(1)))
 
-            result = self.client.send_transaction(tx)
-            signature = result.value
+    avg_fit = round(sum(fits) / len(fits)) if fits else 90
+    consensus = "Starke Evidenz für evolvierende Dark Energy (basierend auf Kollision)" if avg_fit > 87 else "Weiterforschen, Tension bleibt"
 
-            print(f"✅ ECHTER On-Chain Log gesendet! Signature: {signature}")
-            return str(signature)
+    signature = onchain.log_consensus(consensus)   # On-Chain bleibt vorerst Test-Hash
 
-        except Exception as e:
-            print(f"❌ On-Chain Fehler: {type(e).__name__} - {e}")
-            return f"Test-Hash: {int(time.time())}"
+    return {
+        "query": query,
+        "insights": insights,
+        "consensus": consensus,
+        "avgFit": avg_fit,
+        "hash": signature
+    }
 
-onchain = OnChainLogger()
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

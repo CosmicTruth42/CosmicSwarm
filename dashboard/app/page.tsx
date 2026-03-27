@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-export default function Home() {
+export default function Dashboard() {
   const [swarmData, setSwarmData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,7 +14,7 @@ export default function Home() {
       console.log('Auto-Refresh ausgeführt um', new Date().toLocaleTimeString());
       setRefreshCount(prev => prev + 1);
 
-      const response = await fetch('https://cosmic-swarm-backend-v2.onrender.com/swarm', {
+      const response = await fetch('https://cosmicswarm-backend-v5.onrender.com/swarm', {
         cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +64,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-black text-white p-8 font-mono">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-6xl font-extrabold mb-2 bg-gradient-to-r from-purple-500 via-cyan-400 to-purple-500 bg-clip-text text-transparent">
             CosmicTruth42
@@ -74,14 +73,8 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="bg-red-900/50 border border-red-500/50 rounded-2xl p-6 mb-8 text-center">
-            <p className="text-red-300">{error}</p>
-          </div>
-        )}
+        {error && <div className="bg-red-900/50 border border-red-500/50 rounded-2xl p-6 mb-8 text-center"><p className="text-red-300">{error}</p></div>}
 
-        {/* Konsens */}
         <div className="bg-gradient-to-br from-zinc-950 to-black border border-cyan-600/30 rounded-3xl p-10 mb-12 text-center shadow-2xl">
           <p className="text-cyan-400 text-sm uppercase tracking-widest mb-4 font-semibold">Swarm-Konsens</p>
           <p className="text-3xl md:text-4xl font-medium leading-tight mb-6">
@@ -95,20 +88,13 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Manueller Refresh-Button */}
         <div className="text-center mb-8">
-          <button
-            onClick={fetchData}
-            className="bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-full transition-all"
-          >
+          <button onClick={fetchData} className="bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-full transition-all">
             Manuell aktualisieren (Test)
           </button>
-          <p className="text-gray-500 text-sm mt-2">
-            Refreshs ausgeführt: {refreshCount}
-          </p>
+          <p className="text-gray-500 text-sm mt-2">Refreshs ausgeführt: {refreshCount}</p>
         </div>
 
-        {/* Agenten-Beiträge */}
         <h2 className="text-3xl text-purple-400 mb-8 font-bold text-center">Agenten-Beiträge</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {swarmData?.insights?.map((insight: string, index: number) => (
@@ -128,7 +114,6 @@ export default function Home() {
           )) || <p className="text-center text-gray-400 col-span-2">Lade Beiträge...</p>}
         </div>
 
-        {/* On-Chain Log */}
         <div className="mt-12 bg-zinc-950 border border-emerald-500/30 rounded-2xl p-6 text-center">
           <p className="text-emerald-400 text-sm mb-3">On-Chain Log • CosmicTruth42</p>
           <p className="font-mono text-xs break-all text-emerald-300">
@@ -136,15 +121,9 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Share-Button */}
         <div className="mt-12 text-center">
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(shareText);
-              alert('Text kopiert – teile auf X/Moltbook!');
-            }}
-            className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-bold py-4 px-12 rounded-full transition-all text-lg shadow-lg"
-          >
+          <button onClick={() => { navigator.clipboard.writeText(shareText); alert('Text kopiert – teile auf X/Moltbook!'); }} 
+                  className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-bold py-4 px-12 rounded-full transition-all text-lg shadow-lg">
             Teilen auf X / Moltbook
           </button>
         </div>
