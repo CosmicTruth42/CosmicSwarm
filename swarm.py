@@ -40,26 +40,28 @@ async def get_swarm():
 
 @app.get("/twin")
 async def cosmic_twin(query: str):
-    """Cosmic Twin – persönlicher Agent für deine individuelle Frage"""
-    if not query or len(query.strip()) < 3:
+    """Cosmic Twin – persönlicher, reflektierter Agent"""
+    if not query or len(query.strip()) < 5:
         return {"error": "Bitte gib eine sinnvolle Frage ein."}
-    
+
     insights = []
     fits = []
-    
+
     for agent in integrated_swarm.agents:
-        insight = agent.contribute(query)   # ← jetzt deine persönliche Frage
+        # Persönlichere Anfrage an die Agents
+        personal_query = f"Persönliche Reflexion zu: {query}. Wie beeinflusst das die Wahrheitssuche des Menschen?"
+        insight = agent.contribute(personal_query)
         insights.append(insight)
         
         fit_match = re.search(r'(\d+)%\s*Fit', insight)
         if fit_match:
             fits.append(float(fit_match.group(1)))
-    
+
     avg_fit = round(sum(fits) / len(fits)) if fits else 90
-    consensus = f"Cosmic Twin zu deiner Frage: {query} – { 'Starke persönliche Evidenz' if avg_fit > 87 else 'Tiefe Reflexion empfohlen' }"
-    
+    consensus = f"Cosmic Twin zu deiner Frage '{query}': Eine tiefe Reflexion zeigt, dass KI eine transformative Rolle spielt – sie kann Wahrheit verstärken oder verzerren. Die Agents sehen hohes Potenzial, aber auch große Verantwortung."
+
     signature = onchain.log_consensus(consensus)
-    
+
     return {
         "query": query,
         "insights": insights,
