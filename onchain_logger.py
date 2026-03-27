@@ -4,18 +4,12 @@ from solders.message import Message
 from solders.system_program import TransferParams, transfer
 from solana.rpc.api import Client
 from solana.rpc.commitment import Confirmed
-import os
 import time
 
 class OnChainLogger:
     def __init__(self):
-        # Key aus der Environment Variable holen (sicher!)
-        private_key = os.getenv("SOLANA_PRIVATE_KEY")
-        if not private_key:
-            raise ValueError("SOLANA_PRIVATE_KEY Environment Variable nicht gefunden!")
-
         self.client = Client("https://api.devnet.solana.com")
-        self.keypair = Keypair.from_base58_string(private_key)
+        self.keypair = Keypair.from_base58_string("2CSe7uUVE5WmTx1xUa1WjiW3syu5mk9W2anMAep3BRDvr6xwJdWobXDuuye1k64bqCm5i8qa13yEg2PEFBjgfp3w")
         print(f"✅ On-Chain Logger gestartet für Wallet: {self.keypair.pubkey()}")
 
     def log_consensus(self, consensus_text: str):
