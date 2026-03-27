@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import integrated_swarm
 import re
-from onchain_logger import onchain   # ← korrekter Import
+from onchain_logger import OnChainLogger   # ← nur die Klasse importieren
 
 app = FastAPI(title="CosmicTruth42 Backend")
 
@@ -13,6 +13,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Instanz einmalig erstellen
+onchain = OnChainLogger()
 
 @app.get("/swarm")
 async def get_swarm():
