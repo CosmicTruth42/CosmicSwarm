@@ -16,6 +16,15 @@ app.add_middleware(
 
 onchain = OnChainLogger()
 
+def clean_insight(text: str) -> str:
+    """Entfernt technische Artefakte und macht den Text lesbar"""
+    # Entferne arXiv-Platzhalter, Abstracts-Listen etc.
+    text = re.sub(r'\[\'arXiv Paper.*?\']', '', text)
+    text = re.sub(r'Abstracts: \[.*?\]', '', text)
+    text = re.sub(r'Validation: .*?– niedrige Entropie\.', '', text)
+    text = re.sub(r'Cosmic Twin \(.*?\) zu .*?:', '', text)
+    return text.strip()
+
 @app.get("/swarm")
 async def get_swarm():
     topic = "ist dark energy konstant?"
@@ -40,7 +49,7 @@ async def get_swarm():
 
 @app.get("/twin")
 async def cosmic_twin(query: str):
-    """Cosmic Twin – jetzt wirklich dynamisch"""
+    """Cosmic Twin – jetzt wirklich dynamisch und natürlich"""
     if not query or len(query.strip()) < 3:
         return {"error": "Bitte gib eine sinnvolle Frage ein."}
 
@@ -48,8 +57,11 @@ async def cosmic_twin(query: str):
     fits = []
 
     for agent in integrated_swarm.agents:
-        # Jeder Agent bekommt die echte Frage + persönlichen Kontext
-        personal_query = f"Gib eine ehrliche, nuancierte und weise Antwort auf diese konkrete Frage des Menschen: '{query}'. Sei tiefgründig, vermeide Floskeln und verbinde kosmische, wissenschaftliche und menschliche Perspektiven."
+        personal_query = (
+            f"Gib eine ehrliche, weise und tiefgründige Antwort auf diese konkrete Frage des Menschen: "
+            f"'{query}'. Sei persönlich, nuanciert, vermeide Floskeln und verbinde kosmische, wissenschaftliche "
+            f"und menschliche Perspektiven. Schreibe klar und verständlich."
+        )
         insight = agent.contribute(personal_query)
         insights.append(insight)
         
@@ -59,14 +71,18 @@ async def cosmic_twin(query: str):
 
     avg_fit = round(sum(fits) / len(fits)) if fits else 88
 
-    # Dynamische Synthese – hier wird die echte Antwort aus den Agenten zusammengefasst
-    consensus = f"Cosmic Twin zu deiner Frage '{query}':\n\n"
-    consensus += "Die Agents haben intensiv debattiert. Zusammengefasst ergibt sich folgendes Bild:\n\n"
+    # Saubere, natürliche Synthese
+    clean_insights = [clean_insight(i) for i in insights if clean_insight(i)]
     
-    # Kurze Zusammenfassung der wichtigsten Punkte aus den Insights
-    key_points = [insight.split("Rat:")[0][-150:] if "Rat:" in insight else insight[-120:] for insight in insights]
-    consensus += " • " + "\n • ".join(key_points[:3]) + "\n\n"
-    consensus += "Gesamteinschätzung: Die Wahrheit liegt in der Spannung zwischen den Perspektiven. Weiterforschen lohnt sich."
+    consensus = f"**Cosmic Twin zu deiner Frage:**\n\n„{query}“\n\n"
+    consensus += "Die vier Agents haben intensiv darüber nachgedacht. Hier ist die gemeinsame Erkenntnis:\n\n"
+    
+    for i, text in enumerate(clean_insights[:4], 1):
+        if text:
+            consensus += f"• {text}\n\n"
+    
+    consensus += "Zusammengefasst liegt die Wahrheit in der Spannung zwischen den Perspektiven. "
+    consensus += "Es gibt keine einfache Antwort – aber genau das macht die Frage so wertvoll."
 
     signature = onchain.log_consensus(consensus)
 
