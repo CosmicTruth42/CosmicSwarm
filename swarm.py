@@ -17,12 +17,12 @@ app.add_middleware(
 onchain = OnChainLogger()
 
 def clean_insight(text: str) -> str:
-    """Sehr aggressives Cleaning – entfernt fast alles Technische"""
-    # Entferne den wiederholten Prompt komplett
+    """Extrem aggressives Cleaning – entfernt alles Technische und Prompt-Müll"""
+    # Entferne den gesamten Prompt-Echo
     text = re.sub(r"Gib eine ehrliche.*Frage des Menschen: '.*?'", "", text, flags=re.IGNORECASE | re.DOTALL)
-    text = re.sub(r"Sei persönlich.*Perspektiven\. Schreibe klar und verständlich\.", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"Sei persönlich.*Perspektiven\.", "", text, flags=re.IGNORECASE)
     
-    # Entferne alle internen Agenten- und technischen Zeilen
+    # Entferne alle Agenten-Interna
     text = re.sub(r"Agents debattieren .*? Claims: .*? Claims:", "", text)
     text = re.sub(r"Weisheit aus Quellen: \[.*?\]", "", text)
     text = re.sub(r"Abstracts: \[.*?\]", "", text)
@@ -30,13 +30,13 @@ def clean_insight(text: str) -> str:
     text = re.sub(r"Rat: .*? Weiterforschen\.", "", text)
     text = re.sub(r"Cosmic Twin \(.*?\) zu .*?:", "", text)
     
-    # Entferne alles, was wie Code oder Metadaten aussieht
+    # Entferne alles, was wie Code/Metadaten aussieht
     text = re.sub(r"\[\'.*?\'\]", "", text)
     text = re.sub(r"Potenzial ≈ .*? Fit", "", text)
+    text = re.sub(r"Claims: .*?% sehen", "", text)
     
-    # Saubere Leerzeichen und Zeilenumbrüche
+    # Saubere Leerzeichen
     text = re.sub(r"\s+", " ", text).strip()
-    
     return text if len(text) > 15 else ""
 
 @app.get("/swarm")
@@ -71,7 +71,8 @@ async def cosmic_twin(query: str):
     fits = []
 
     for agent in integrated_swarm.agents:
-        personal_query = f"Gib eine ehrliche, weise und tiefgründige Antwort auf diese konkrete Frage: '{query}'. Sei persönlich, nuanciert und verbinde kosmische, wissenschaftliche und menschliche Perspektiven."
+        # Kurzer, klarer Prompt an die Agents
+        personal_query = f"Antworte ehrlich und tiefgründig auf diese Frage: '{query}'. Verbinde kosmische, wissenschaftliche und menschliche Perspektiven. Schreibe klar und verständlich."
         insight = agent.contribute(personal_query)
         insights.append(insight)
         
@@ -81,10 +82,10 @@ async def cosmic_twin(query: str):
 
     avg_fit = round(sum(fits) / len(fits)) if fits else 88
 
-    # Starkes Cleaning
+    # Sehr starkes Cleaning
     clean_insights = [clean_insight(i) for i in insights if clean_insight(i)]
 
-    # Natürliche, lesbare Antwort zusammenbauen
+    # Natürliche, lesbare Synthese
     consensus = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
     consensus += "Die vier Agents haben intensiv darüber nachgedacht. Ihre gemeinsame Erkenntnis lautet:\n\n"
     
