@@ -17,19 +17,27 @@ app.add_middleware(
 onchain = OnChainLogger()
 
 def clean_insight(text: str) -> str:
-    """Sehr aggressives Cleaning – entfernt alles Technische"""
-    # Entferne den wiederholten Prompt
-    text = re.sub(r"Gib eine ehrliche.*Frage des Menschen: '.*?'", "", text, flags=re.IGNORECASE)
-    # Entferne technische Zeilen
+    """Sehr aggressives Cleaning – entfernt fast alles Technische"""
+    # Entferne den wiederholten Prompt komplett
+    text = re.sub(r"Gib eine ehrliche.*Frage des Menschen: '.*?'", "", text, flags=re.IGNORECASE | re.DOTALL)
+    text = re.sub(r"Sei persönlich.*Perspektiven\. Schreibe klar und verständlich\.", "", text, flags=re.IGNORECASE)
+    
+    # Entferne alle internen Agenten- und technischen Zeilen
     text = re.sub(r"Agents debattieren .*? Claims: .*? Claims:", "", text)
     text = re.sub(r"Weisheit aus Quellen: \[.*?\]", "", text)
     text = re.sub(r"Abstracts: \[.*?\]", "", text)
     text = re.sub(r"Validation: .*?– niedrige Entropie\.", "", text)
     text = re.sub(r"Rat: .*? Weiterforschen\.", "", text)
     text = re.sub(r"Cosmic Twin \(.*?\) zu .*?:", "", text)
-    # Entferne überflüssige Leerzeichen und Zeilenumbrüche
+    
+    # Entferne alles, was wie Code oder Metadaten aussieht
+    text = re.sub(r"\[\'.*?\'\]", "", text)
+    text = re.sub(r"Potenzial ≈ .*? Fit", "", text)
+    
+    # Saubere Leerzeichen und Zeilenumbrüche
     text = re.sub(r"\s+", " ", text).strip()
-    return text
+    
+    return text if len(text) > 15 else ""
 
 @app.get("/swarm")
 async def get_swarm():
@@ -73,14 +81,14 @@ async def cosmic_twin(query: str):
 
     avg_fit = round(sum(fits) / len(fits)) if fits else 88
 
-    # Saubere Insights
+    # Starkes Cleaning
     clean_insights = [clean_insight(i) for i in insights if clean_insight(i)]
 
-    # Natürliche, lesbare Synthese
+    # Natürliche, lesbare Antwort zusammenbauen
     consensus = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
     consensus += "Die vier Agents haben intensiv darüber nachgedacht. Ihre gemeinsame Erkenntnis lautet:\n\n"
     
-    for text in clean_insights[:3]:  # nur die besten 3
+    for text in clean_insights[:3]:
         if text and len(text) > 20:
             consensus += f"• {text}\n\n"
     
@@ -91,7 +99,7 @@ async def cosmic_twin(query: str):
 
     return {
         "query": query,
-        "insights": insights,           # roh für Debugging
+        "insights": insights,           # nur für Debugging
         "consensus": consensus.strip(),
         "avgFit": avg_fit,
         "hash": signature
