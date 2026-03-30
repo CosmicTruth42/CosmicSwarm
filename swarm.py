@@ -17,11 +17,10 @@ app.add_middleware(
 onchain = OnChainLogger()
 
 def clean_insight(text: str) -> str:
-    """Noch aggressiveres Cleaning"""
+    """Aggressives Cleaning"""
     text = re.sub(r"Gib eine ehrliche.*Frage: '.*?'", "", text, flags=re.IGNORECASE | re.DOTALL)
     text = re.sub(r"Sei persönlich.*Perspektiven\.", "", text, flags=re.IGNORECASE)
     text = re.sub(r"Antworte ehrlich.*Frage: '.*?'", "", text, flags=re.IGNORECASE | re.DOTALL)
-    
     text = re.sub(r"Agents debattieren .*? Claims: .*? Claims:", "", text)
     text = re.sub(r"Weisheit aus Quellen: \[.*?\]", "", text)
     text = re.sub(r"Abstracts: \[.*?\]", "", text)
@@ -29,22 +28,22 @@ def clean_insight(text: str) -> str:
     text = re.sub(r"Rat: .*? Weiterforschen\.", "", text)
     text = re.sub(r"Cosmic Twin \(.*?\) zu .*?:", "", text)
     text = re.sub(r"kosmisches Potenzial in Wahrheitssuche", "", text)
-    
     text = re.sub(r"\s+", " ", text).strip()
     return text if len(text) > 20 else ""
 
 @app.get("/twin")
 async def cosmic_twin(query: str):
+    """Cosmic Twin mit Meta-Instanz"""
     if not query or len(query.strip()) < 3:
         return {"error": "Bitte gib eine sinnvolle Frage ein."}
 
-    insights = []
+    # Schritt 1: Roh-Antworten von den Agents holen
+    raw_insights = []
     fits = []
-
     for agent in integrated_swarm.agents:
-        personal_query = f"Antworte weise und tiefgründig auf diese Frage: '{query}'. Verbinde kosmische, wissenschaftliche und menschliche Gedanken. Schreibe klar und verständlich, ohne Fachchinesisch."
+        personal_query = f"Antworte weise und tiefgründig auf diese Frage: '{query}'. Verbinde kosmische, wissenschaftliche und menschliche Gedanken. Schreibe klar und verständlich."
         insight = agent.contribute(personal_query)
-        insights.append(insight)
+        raw_insights.append(insight)
         
         fit_match = re.search(r'(\d+)%\s*Fit', insight)
         if fit_match:
@@ -52,29 +51,30 @@ async def cosmic_twin(query: str):
 
     avg_fit = round(sum(fits) / len(fits)) if fits else 88
 
-    clean_insights = [clean_insight(i) for i in insights if clean_insight(i)]
+    # Schritt 2: Starkes Cleaning
+    clean_insights = [clean_insight(i) for i in raw_insights if clean_insight(i)]
 
-    # Noch bessere, natürlichere Synthese
-    consensus = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
-    consensus += "Die vier Agents haben intensiv darüber nachgedacht. Hier ist, was dabei herausgekommen ist:\n\n"
+    # Schritt 3: Meta-Instanz – einfache, aber effektive Synthese
+    meta_synthesis = "Die vier Agents haben intensiv nachgedacht. "
+    meta_synthesis += "Zusammengefasst ergibt sich folgendes Bild:\n\n"
     
     for text in clean_insights[:3]:
         if text:
-            consensus += f"• {text}\n\n"
+            meta_synthesis += f"• {text}\n\n"
     
-    consensus += "Zusammengefasst: Die Wahrheit liegt oft in der Spannung zwischen den Perspektiven. Es gibt keine einfache Antwort – und genau das macht solche Fragen wertvoll."
+    meta_synthesis += "Die Wahrheit liegt oft in der Spannung zwischen den verschiedenen Perspektiven. "
+    meta_synthesis += "Es gibt keine einfache, endgültige Antwort – und genau das macht solche Fragen wertvoll."
 
-    signature = onchain.log_consensus(consensus)
+    signature = onchain.log_consensus(meta_synthesis)
 
     return {
         "query": query,
-        "insights": insights,
-        "consensus": consensus.strip(),
+        "insights": raw_insights,   # nur für Debugging
+        "consensus": meta_synthesis.strip(),
         "avgFit": avg_fit,
         "hash": signature
     }
 
-# Der alte /swarm Endpoint bleibt unverändert
 @app.get("/swarm")
 async def get_swarm():
     topic = "ist dark energy konstant?"
