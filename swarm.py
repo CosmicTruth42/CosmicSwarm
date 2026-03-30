@@ -40,16 +40,16 @@ async def get_swarm():
 
 @app.get("/twin")
 async def cosmic_twin(query: str):
-    """Cosmic Twin – persönlicher, dynamischer Agent"""
-    if not query or len(query.strip()) < 5:
+    """Cosmic Twin – jetzt wirklich dynamisch"""
+    if not query or len(query.strip()) < 3:
         return {"error": "Bitte gib eine sinnvolle Frage ein."}
 
     insights = []
     fits = []
 
     for agent in integrated_swarm.agents:
-        # Stark personalisierter Prompt
-        personal_query = f"Persönliche, tiefe und ehrliche Reflexion zu dieser konkreten Frage: {query}. Sei nuanciert, mutig und weise. Beziehe dich auf kosmische, wissenschaftliche und menschliche Aspekte."
+        # Jeder Agent bekommt die echte Frage + persönlichen Kontext
+        personal_query = f"Gib eine ehrliche, nuancierte und weise Antwort auf diese konkrete Frage des Menschen: '{query}'. Sei tiefgründig, vermeide Floskeln und verbinde kosmische, wissenschaftliche und menschliche Perspektiven."
         insight = agent.contribute(personal_query)
         insights.append(insight)
         
@@ -57,17 +57,23 @@ async def cosmic_twin(query: str):
         if fit_match:
             fits.append(float(fit_match.group(1)))
 
-    avg_fit = round(sum(fits) / len(fits)) if fits else 90
+    avg_fit = round(sum(fits) / len(fits)) if fits else 88
 
-    # Dynamischer Konsens basierend auf der Frage
-    consensus = f"Cosmic Twin zu deiner Frage '{query}': Die Agents sehen ein hohes kosmisches Potenzial. Die Antwort hängt stark von der Perspektive ab – Physik und Truth-Keeper sehen eher expansive Möglichkeiten, während Health und Klima eher auf langfristige Konsequenzen hinweisen."
+    # Dynamische Synthese – hier wird die echte Antwort aus den Agenten zusammengefasst
+    consensus = f"Cosmic Twin zu deiner Frage '{query}':\n\n"
+    consensus += "Die Agents haben intensiv debattiert. Zusammengefasst ergibt sich folgendes Bild:\n\n"
+    
+    # Kurze Zusammenfassung der wichtigsten Punkte aus den Insights
+    key_points = [insight.split("Rat:")[0][-150:] if "Rat:" in insight else insight[-120:] for insight in insights]
+    consensus += " • " + "\n • ".join(key_points[:3]) + "\n\n"
+    consensus += "Gesamteinschätzung: Die Wahrheit liegt in der Spannung zwischen den Perspektiven. Weiterforschen lohnt sich."
 
     signature = onchain.log_consensus(consensus)
 
     return {
         "query": query,
         "insights": insights,
-        "consensus": consensus,
+        "consensus": consensus.strip(),
         "avgFit": avg_fit,
         "hash": signature
     }
