@@ -17,31 +17,35 @@ app.add_middleware(
 onchain = OnChainLogger()
 
 def clean_insight(text: str) -> str:
-    """Aggressives Cleaning"""
-    text = re.sub(r"Gib eine ehrliche.*Frage: '.*?'", "", text, flags=re.IGNORECASE | re.DOTALL)
-    text = re.sub(r"Sei persönlich.*Perspektiven\.", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"Antworte ehrlich.*Frage: '.*?'", "", text, flags=re.IGNORECASE | re.DOTALL)
+    """Sehr starkes Cleaning speziell für cosmic_truth.py Output"""
+    # Entfernt alles Technische und Prompt-Müll
+    text = re.sub(r"Cosmic Twin \(.*?\) zu .*?:", "", text)
     text = re.sub(r"Agents debattieren .*? Claims: .*? Claims:", "", text)
     text = re.sub(r"Weisheit aus Quellen: \[.*?\]", "", text)
     text = re.sub(r"Abstracts: \[.*?\]", "", text)
     text = re.sub(r"Validation: .*?– niedrige Entropie\.", "", text)
     text = re.sub(r"Rat: .*? Weiterforschen\.", "", text)
-    text = re.sub(r"Cosmic Twin \(.*?\) zu .*?:", "", text)
+    text = re.sub(r"Gib eine ehrliche.*Frage: '.*?'", "", text, flags=re.IGNORECASE | re.DOTALL)
+    text = re.sub(r"Sei persönlich.*Perspektiven\.", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"Antworte ehrlich.*Frage: '.*?'", "", text, flags=re.IGNORECASE | re.DOTALL)
+    text = re.sub(r"\[\'.*?\'\]", "", text)
     text = re.sub(r"kosmisches Potenzial in Wahrheitssuche", "", text)
+    
+    # Saubere Leerzeichen
     text = re.sub(r"\s+", " ", text).strip()
-    return text if len(text) > 20 else ""
+    return text if len(text) > 25 else ""
 
 @app.get("/twin")
 async def cosmic_twin(query: str):
-    """Cosmic Twin mit Meta-Instanz"""
+    """Cosmic Twin mit Meta-Instanz – saubere, natürliche Antworten"""
     if not query or len(query.strip()) < 3:
         return {"error": "Bitte gib eine sinnvolle Frage ein."}
 
-    # Schritt 1: Roh-Antworten von den Agents holen
     raw_insights = []
     fits = []
+
     for agent in integrated_swarm.agents:
-        personal_query = f"Antworte weise und tiefgründig auf diese Frage: '{query}'. Verbinde kosmische, wissenschaftliche und menschliche Gedanken. Schreibe klar und verständlich."
+        personal_query = f"Antworte weise, persönlich und tiefgründig auf diese Frage: '{query}'. Verbinde kosmische, wissenschaftliche und menschliche Gedanken. Schreibe klar und verständlich."
         insight = agent.contribute(personal_query)
         raw_insights.append(insight)
         
@@ -51,26 +55,26 @@ async def cosmic_twin(query: str):
 
     avg_fit = round(sum(fits) / len(fits)) if fits else 88
 
-    # Schritt 2: Starkes Cleaning
+    # Starkes Cleaning
     clean_insights = [clean_insight(i) for i in raw_insights if clean_insight(i)]
 
-    # Schritt 3: Meta-Instanz – einfache, aber effektive Synthese
-    meta_synthesis = "Die vier Agents haben intensiv nachgedacht. "
-    meta_synthesis += "Zusammengefasst ergibt sich folgendes Bild:\n\n"
-    
+    # Meta-Instanz: Natürliche Zusammenfassung
+    meta = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
+    meta += "Die vier Agents haben intensiv darüber nachgedacht. Hier ist ihre gemeinsame Erkenntnis:\n\n"
+
     for text in clean_insights[:3]:
         if text:
-            meta_synthesis += f"• {text}\n\n"
-    
-    meta_synthesis += "Die Wahrheit liegt oft in der Spannung zwischen den verschiedenen Perspektiven. "
-    meta_synthesis += "Es gibt keine einfache, endgültige Antwort – und genau das macht solche Fragen wertvoll."
+            meta += f"• {text}\n\n"
 
-    signature = onchain.log_consensus(meta_synthesis)
+    meta += "Zusammengefasst liegt die Wahrheit oft in der Spannung zwischen den verschiedenen Perspektiven. "
+    meta += "Es gibt selten eine einfache Antwort – und genau das macht solche Fragen wertvoll."
+
+    signature = onchain.log_consensus(meta)
 
     return {
         "query": query,
         "insights": raw_insights,   # nur für Debugging
-        "consensus": meta_synthesis.strip(),
+        "consensus": meta.strip(),
         "avgFit": avg_fit,
         "hash": signature
     }
