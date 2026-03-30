@@ -40,33 +40,40 @@ async def get_swarm():
 
 @app.get("/twin")
 async def cosmic_twin(query: str):
-    """Cosmic Twin – persönlicher, reflektierter Agent"""
+    """Cosmic Twin – persönlicher, reflektierter Agent mit Meta-Instanz"""
     if not query or len(query.strip()) < 5:
         return {"error": "Bitte gib eine sinnvolle Frage ein."}
 
     insights = []
     fits = []
+    raw_insights = []
 
     for agent in integrated_swarm.agents:
-        # Stark personalisierter Prompt für jeden Agent
         personal_query = f"Persönliche, tiefe und ehrliche Reflexion zu dieser Frage: {query}. Wie beeinflusst das die Wahrheitssuche, die Zukunft des Menschen und die kosmische Perspektive? Sei nuanciert, mutig und weise."
         insight = agent.contribute(personal_query)
         insights.append(insight)
+        raw_insights.append(insight)
         
         fit_match = re.search(r'(\d+)%\s*Fit', insight)
         if fit_match:
             fits.append(float(fit_match.group(1)))
 
     avg_fit = round(sum(fits) / len(fits)) if fits else 90
-    
-    # Dynamischer, persönlicher Konsens basierend auf den Insights
-    consensus = f"Cosmic Twin zu deiner Frage '{query}': Die Agents sehen KI als eine der mächtigsten Kräfte unserer Zeit. Sie kann uns helfen, tiefer in die Wahrheit einzudringen, aber auch neue Illusionen schaffen. Die entscheidende Frage ist nicht nur, was KI kann, sondern ob wir weise genug sind, sie zu führen."
+
+    # Einfache Meta-Instanz (dynamischer Schwellenwert)
+    variance = max(fits) - min(fits) if fits else 0
+    threshold = 85 if variance < 15 else 78   # dynamisch: bei hoher Varianz niedrigerer Schwellenwert
+
+    if avg_fit >= threshold and variance < 25:
+        consensus = f"Cosmic Twin zu deiner Frage '{query}': Die Agents sehen ein hohes Potenzial, dass KI eine transformative Rolle spielt – sie kann Wahrheit verstärken, aber auch verzerren. Die entscheidende Frage ist, ob wir weise genug sind, sie zu führen."
+    else:
+        consensus = f"Non-Consensus zu deiner Frage '{query}'. Die Agents sind uneins. Kernkonflikt liegt in der Spannung zwischen Erkenntnispotenzial und systemischem Risiko. Nächste Forschungsfrage: Unter welchen Bedingungen kann KI die positiven Potenziale maximieren und die Risiken minimieren?"
 
     signature = onchain.log_consensus(consensus)
 
     return {
         "query": query,
-        "insights": insights,
+        "insights": raw_insights,
         "consensus": consensus,
         "avgFit": avg_fit,
         "hash": signature
