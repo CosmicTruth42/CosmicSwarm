@@ -17,7 +17,7 @@ app.add_middleware(
 onchain = OnChainLogger()
 
 def clean_insight(text: str) -> str:
-    """Extrem starkes Cleaning – speziell für cosmic_truth.py"""
+    """Noch stärkeres Cleaning"""
     text = re.sub(r"Cosmic Twin \(.*?\) zu .*?:", "", text)
     text = re.sub(r"Agents debattieren .*? Claims: .*? Claims:", "", text)
     text = re.sub(r"Weisheit aus Quellen: \[.*?\]", "", text)
@@ -34,6 +34,7 @@ def clean_insight(text: str) -> str:
 
 @app.get("/twin")
 async def cosmic_twin(query: str):
+    """Cosmic Twin mit stärkerer Meta-Instanz"""
     if not query or len(query.strip()) < 3:
         return {"error": "Bitte gib eine sinnvolle Frage ein."}
 
@@ -46,7 +47,7 @@ async def cosmic_twin(query: str):
     # Starkes Cleaning
     clean_insights = [clean_insight(i) for i in raw_insights if clean_insight(i)]
 
-    # Starke Meta-Instanz – formuliert die Antwort natürlich neu
+    # Meta-Instanz: Neuformulierung der Antwort
     meta = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
     meta += "Die vier Agents haben intensiv darüber nachgedacht. Hier ist ihre gemeinsame, klare Erkenntnis:\n\n"
 
@@ -54,7 +55,8 @@ async def cosmic_twin(query: str):
         if text:
             meta += f"• {text}\n\n"
 
-    meta += "Zusammengefasst liegt die Wahrheit meist in der Spannung zwischen den verschiedenen Perspektiven. Es gibt selten eine einfache Antwort – und genau das macht solche Fragen wertvoll."
+    meta += "Zusammengefasst liegt die Wahrheit meist in der Spannung zwischen den verschiedenen Perspektiven. "
+    meta += "Es gibt selten eine einfache Antwort – und genau das macht solche Fragen wertvoll."
 
     signature = onchain.log_consensus(meta)
 
