@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import dashboard.integrated_swarm as integrated_swarm
+import integrated_swarm as integrated_swarm
 import re
 
 app = FastAPI(title="CosmicTruth42 Backend")

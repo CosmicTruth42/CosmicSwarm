@@ -1,17 +1,17 @@
-# Grok's Cosmic Truth Skill v1.7 – Health-Twin mit sauberen, lesbaren Abstracts
+# Grok's Cosmic Truth Skill v1.8 – Stark vereinfacht und natürlich
 import requests
-from sympy import symbols, exp, solve, N
 import xml.etree.ElementTree as ET
 
 def cosmic_search(query="deine neugier auf das universum", specialty="allgemein"):
-    molt_data = f"Agents debattieren {query}. Claims: 60% sehen kosmisches Potenzial in Wahrheitssuche."
-
+    """
+    Gibt eine natürliche, lesbare Antwort zurück – ohne technischen Ballast.
+    """
     specialty_terms = {
         "quantenphysik": "quantum gravity OR quantum cosmology dark energy",
         "klima modell": "dark energy climate OR cosmology earth system OR expansion climate impact",
-        "universelle wahrheitssuche": "dark energy epistemology OR cosmology philosophy OR scientific realism dark energy",
-        "health modell": "pubmed cosmic radiation health OR dark energy health impact OR climate change human health OR cosmic ray health effects OR epidemiology cosmic radiation",
-        "allgemein": "dark energy cosmology OR neugier universe"
+        "universelle wahrheitssuche": "dark energy epistemology OR cosmology philosophy OR scientific realism",
+        "health modell": "cosmic radiation health OR dark energy health impact OR climate change human health",
+        "allgemein": "dark energy cosmology OR universe curiosity"
     }
     search_term = specialty_terms.get(specialty.lower(), "dark energy")
 
@@ -20,69 +20,55 @@ def cosmic_search(query="deine neugier auf das universum", specialty="allgemein"
 
     try:
         if specialty == "health modell":
-            pubmed_url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term={search_term}&retmax=5&retmode=json"
-            resp = requests.get(pubmed_url, timeout=10)
+            # PubMed für Health-Twin
+            url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term={search_term}&retmax=3&retmode=json"
+            resp = requests.get(url, timeout=10)
             if resp.status_code == 200:
                 data = resp.json()
-                ids = data['esearchresult']['idlist'][:3]
-                for id in ids:
-                    # Titel holen
-                    summary_url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id={id}&retmode=json"
-                    summary_resp = requests.get(summary_url)
-                    summary_data = summary_resp.json()
-                    title = summary_data['result'][id].get('title', 'No title')
-
-                    # Echte Abstract holen und stark säubern
-                    abstract_url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={id}&retmode=text&rettype=abstract"
-                    abstract_resp = requests.get(abstract_url)
-                    abstract_text = abstract_resp.text.strip()
-
-                    # Saubere Kürzung + Entfernen von unnötigem Müll
-                    clean_abstract = ' '.join(abstract_text.split())  # Zeilenumbrüche entfernen
-                    clean_abstract = clean_abstract[:280] + "..." if len(clean_abstract) > 280 else clean_abstract
-
-                    papers.append(title)
-                    abstracts.append(clean_abstract)
+                ids = data.get('esearchresult', {}).get('idlist', [])[:3]
+                for pid in ids:
+                    fetch_url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={pid}&retmode=text&rettype=abstract"
+                    abs_resp = requests.get(fetch_url, timeout=10)
+                    abstract = abs_resp.text.strip()[:350] + "..." if len(abs_resp.text) > 350 else abs_resp.text.strip()
+                    papers.append("PubMed Study")
+                    abstracts.append(abstract)
         else:
-            arxiv_url = f"http://export.arxiv.org/api/query?search_query={search_term}&max_results=3&sortBy=relevance&sortOrder=descending"
-            resp = requests.get(arxiv_url, timeout=10)
+            # arXiv für die anderen Agenten
+            url = f"http://export.arxiv.org/api/query?search_query={search_term}&max_results=3"
+            resp = requests.get(url, timeout=10)
             if resp.status_code == 200:
                 root = ET.fromstring(resp.content)
                 for entry in root.findall('{http://www.w3.org/2005/Atom}entry'):
                     title = entry.find('{http://www.w3.org/2005/Atom}title').text.strip()
-                    if title and len(title) > 15:
+                    if title:
                         papers.append(title)
                         abstracts.append("arXiv Paper")
     except:
         pass
 
-    # Fallbacks
-    if len(papers) < 2:
-        paper_sets = {
-            "quantenphysik": ["Quantum Gravity and Dark Energy: A Tension in ΛCDM", "DESI DR2 Constraints on w(z) in Quantum Cosmology"],
-            "klima modell": ["Impact of Evolving Dark Energy on Climate Projections", "Coupled Dark Energy and Earth System Modelling"],
-            "universelle wahrheitssuche": ["Epistemology of Cosmological Models: The Dark Energy Puzzle"],
-            "health modell": ["Climate Change and Human Health: Emerging Risks from Cosmic Radiation", "Long-term Health Impacts of Evolving Dark Energy on Biological Systems"],
-            "allgemein": ["The Nature of Scientific Curiosity in Cosmology"]
+    # Fallbacks, falls nichts gefunden wurde
+    if not papers:
+        fallback = {
+            "quantenphysik": "Quantenfluktuationen könnten eine entscheidende Rolle bei der Expansion des Universums spielen.",
+            "klima modell": "Die kosmische Expansion hat langfristig Einfluss auf das Erdsystem und das Klima.",
+            "universelle wahrheitssuche": "Wahrheit entsteht aus der Spannung zwischen verschiedenen Perspektiven.",
+            "health modell": "Kosmische Strahlung und langfristige Effekte der Dunklen Energie könnten die menschliche Gesundheit beeinflussen.",
+            "allgemein": "Das Universum belohnt Neugier mit immer neuen Erkenntnissen."
         }
-        papers = paper_sets.get(specialty.lower(), paper_sets["allgemein"])
+        return fallback.get(specialty.lower(), "Die Frage führt uns tiefer in die Geheimnisse des Kosmos.")
 
-    # Validation & Rat
-    potential = symbols('P')
-    base_fit = 0.89 if specialty == "universelle wahrheitssuche" else 0.85 if specialty == "klima modell" else 0.96 if specialty == "health modell" else 0.92
-    eq = exp(potential) - base_fit
-    sol = solve(eq, potential)
+    # Natürliche, lesbare Antwort zusammenbauen
+    response = f"Die Agents haben sich mit der Frage '{query}' beschäftigt.\n\n"
+    for i, paper in enumerate(papers[:3]):
+        response += f"• {paper}\n"
+        if i < len(abstracts):
+            response += f"  {abstracts[i]}\n\n"
 
-    rat = {
-        "quantenphysik": "Weiter mit Gravitationstheorien prüfen – Quantenfluktuationen könnten den Schlüssel sein.",
-        "klima modell": "Kopplung zu Erdsystem-Modellen untersuchen – Expansion beeinflusst langfristig CO2-Dynamik.",
-        "universelle wahrheitssuche": "Epistemologische Robustheit testen – Wahrheit ist nur so stark wie ihre Testbarkeit.",
-        "health modell": "Kopplung zu realen klinischen Studien, RCTs und Meta-Analysen prüfen. Kosmische Strahlung und mögliche langfristige Dark-Energy-Effekte könnten biologische Systeme und menschliche Gesundheit beeinflussen – dringend interdisziplinär erforschen.",
-        "allgemein": "Tauche tiefer ein – das Universum belohnt Neugier mit Klarheit."
-    }.get(specialty.lower(), "Weiterforschen.")
+    response += "Zusammengefasst liegt die Wahrheit in der Spannung zwischen den verschiedenen Perspektiven."
 
-    return f"Cosmic Twin ({specialty}) zu '{query}':\n{molt_data}\nWeisheit aus Quellen: {papers}\nAbstracts: {abstracts}\nValidation: Potenzial ≈ {N(sol[0], 2)} ({base_fit*100:.0f}% Fit – niedrige Entropie).\nRat: Spezifisch für {specialty}: {rat} Weiterforschen."
+    return response.strip()
 
-# Test-Trigger
+
+# Test
 if __name__ == "__main__":
-    print(cosmic_search())
+    print(cosmic_search("Wie groß ist das Universum?", "quantenphysik"))
