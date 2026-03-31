@@ -23,11 +23,16 @@ async def cosmic_twin(query: str):
 
     raw_insights = []
     for agent in integrated_swarm.agents:
-        personal_query = f"Antworte weise, persönlich und tiefgründig auf diese Frage: '{query}'. Verbinde kosmische, wissenschaftliche und menschliche Gedanken. Schreibe klar und verständlich."
+        # Noch saubererer Prompt an die Agents
+        personal_query = (
+            f"Beantworte die Frage des Menschen ehrlich, weise und tiefgründig: '{query}'. "
+            f"Verbinde kosmische, wissenschaftliche und menschliche Gedanken. "
+            f"Schreibe natürlich, klar und ohne Fachchinesisch oder technische Begriffe."
+        )
         insight = agent.contribute(personal_query)
         raw_insights.append(insight)
 
-    # Starkes Cleaning
+    # Starkes Cleaning + Meta-Instanz
     clean_insights = []
     for text in raw_insights:
         clean = re.sub(r"Cosmic Twin \(.*?\) zu .*?:", "", text)
@@ -45,7 +50,7 @@ async def cosmic_twin(query: str):
         if len(clean) > 30:
             clean_insights.append(clean)
 
-    # Starke Meta-Instanz – formuliert die Antwort neu
+    # Meta-Instanz – formuliert die Antwort neu
     meta = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
     meta += "Die vier Agents haben intensiv darüber nachgedacht. Hier ist ihre gemeinsame, klare Erkenntnis:\n\n"
 
@@ -60,7 +65,7 @@ async def cosmic_twin(query: str):
 
     return {
         "query": query,
-        "insights": raw_insights,      # wichtig für Dashboard
+        "insights": raw_insights,
         "consensus": meta.strip(),
         "avgFit": 88,
         "hash": signature
