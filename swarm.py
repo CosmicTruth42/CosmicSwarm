@@ -16,22 +16,6 @@ app.add_middleware(
 
 onchain = OnChainLogger()
 
-def clean_insight(text: str) -> str:
-    """Starkes Cleaning"""
-    text = re.sub(r"Cosmic Twin \(.*?\) zu .*?:", "", text)
-    text = re.sub(r"Agents debattieren .*? Claims: .*? Claims:", "", text)
-    text = re.sub(r"Weisheit aus Quellen: \[.*?\]", "", text)
-    text = re.sub(r"Abstracts: \[.*?\]", "", text)
-    text = re.sub(r"Validation: .*?– niedrige Entropie\.", "", text)
-    text = re.sub(r"Rat: .*? Weiterforschen\.", "", text)
-    text = re.sub(r"Gib eine ehrliche.*Frage: '.*?'", "", text, flags=re.IGNORECASE | re.DOTALL)
-    text = re.sub(r"Sei persönlich.*Perspektiven\.", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"Antworte weise.*Frage: '.*?'", "", text, flags=re.IGNORECASE | re.DOTALL)
-    text = re.sub(r"kosmisches Potenzial in Wahrheitssuche", "", text)
-    text = re.sub(r"\[\'.*?\'\]", "", text)
-    text = re.sub(r"\s+", " ", text).strip()
-    return text if len(text) > 25 else ""
-
 @app.get("/twin")
 async def cosmic_twin(query: str):
     if not query or len(query.strip()) < 3:
@@ -43,15 +27,32 @@ async def cosmic_twin(query: str):
         insight = agent.contribute(personal_query)
         raw_insights.append(insight)
 
-    clean_insights = [clean_insight(i) for i in raw_insights if clean_insight(i)]
+    # Starkes Cleaning
+    clean_insights = []
+    for text in raw_insights:
+        clean = re.sub(r"Cosmic Twin \(.*?\) zu .*?:", "", text)
+        clean = re.sub(r"Agents debattieren .*? Claims: .*? Claims:", "", clean)
+        clean = re.sub(r"Weisheit aus Quellen: \[.*?\]", "", clean)
+        clean = re.sub(r"Abstracts: \[.*?\]", "", clean)
+        clean = re.sub(r"Validation: .*?– niedrige Entropie\.", "", clean)
+        clean = re.sub(r"Rat: .*? Weiterforschen\.", "", clean)
+        clean = re.sub(r"Gib eine ehrliche.*Frage: '.*?'", "", clean, flags=re.IGNORECASE | re.DOTALL)
+        clean = re.sub(r"Sei persönlich.*Perspektiven\.", "", clean, flags=re.IGNORECASE)
+        clean = re.sub(r"Antworte weise.*Frage: '.*?'", "", clean, flags=re.IGNORECASE | re.DOTALL)
+        clean = re.sub(r"kosmisches Potenzial in Wahrheitssuche", "", clean)
+        clean = re.sub(r"\[\'.*?\'\]", "", clean)
+        clean = re.sub(r"\s+", " ", clean).strip()
+        if len(clean) > 30:
+            clean_insights.append(clean)
 
+    # Starke Meta-Instanz – formuliert die Antwort neu
     meta = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
     meta += "Die vier Agents haben intensiv darüber nachgedacht. Hier ist ihre gemeinsame, klare Erkenntnis:\n\n"
-    
+
     for text in clean_insights[:3]:
         if text:
             meta += f"• {text}\n\n"
-    
+
     meta += "Zusammengefasst liegt die Wahrheit meist in der Spannung zwischen den verschiedenen Perspektiven. "
     meta += "Es gibt selten eine einfache Antwort – und genau das macht solche Fragen wertvoll."
 
@@ -59,7 +60,7 @@ async def cosmic_twin(query: str):
 
     return {
         "query": query,
-        "insights": raw_insights,      # ← wichtig für das Dashboard
+        "insights": raw_insights,      # wichtig für Dashboard
         "consensus": meta.strip(),
         "avgFit": 88,
         "hash": signature
