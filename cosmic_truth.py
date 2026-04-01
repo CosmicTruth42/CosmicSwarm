@@ -1,27 +1,18 @@
-# Grok's Cosmic Truth Skill v2.1 – Maximal natürlich und direkt
-import requests
-import xml.etree.ElementTree as ET
-
+# Grok's Cosmic Truth Skill v2.2 – Maximal natürlich und direkt
 def cosmic_search(query="deine neugier auf das universum", specialty="allgemein"):
     """
-    Gibt eine kurze, natürliche und direkt auf die Frage abgestimmte Antwort zurück.
+    Gibt eine kurze, natürliche Antwort zurück – ohne technischen Ballast.
     """
-    # Direkte, natürliche Antworten je Agent – angepasst an die Frage
     responses = {
-        "quantenphysik": f"Das Universum ist unvorstellbar groß. Seine Expansion wird durch Dunkle Energie angetrieben, und Quantenfluktuationen spielen eine wichtige Rolle. Zur Frage '{query}' können wir sagen, dass wir die genaue Größe noch nicht kennen – sie wächst ständig weiter.",
-        "klima modell": f"Die kosmische Expansion beeinflusst langfristig auch das Klima auf der Erde. Dunkle Energie verändert die Bedingungen für Leben. Bei der Frage '{query}' geht es um die großen Zusammenhänge zwischen Kosmos und unserem Planeten.",
-        "universelle wahrheitssuche": f"Die Größe des Universums ist eine der tiefsten Fragen der Menschheit. Die Wahrheit liegt oft in der Spannung zwischen dem, was wir messen können, und dem, was wir noch nicht verstehen. Deine Frage '{query}' berührt genau diesen Punkt.",
-        "health modell": f"Die Weite des Universums hat möglicherweise Einfluss auf die menschliche Gesundheit, zum Beispiel durch kosmische Strahlung. Die Frage '{query}' führt uns zu der Überlegung, wie der Kosmos unser Leben beeinflusst.",
-        "allgemein": f"Das Universum ist so groß, dass unser Verstand es kaum erfassen kann. Deine Frage '{query}' zeigt, wie faszinierend und gleichzeitig demütigend diese Erkenntnis ist."
+        "quantenphysik": "Das Universum ist unvorstellbar groß. Seine Expansion wird durch Dunkle Energie angetrieben, und Quantenfluktuationen spielen dabei eine wichtige Rolle.",
+        "klima modell": "Die kosmische Expansion beeinflusst langfristig auch das Klima auf der Erde. Dunkle Energie verändert die Bedingungen für Leben auf unserem Planeten.",
+        "universelle wahrheitssuche": "Die Größe des Universums ist eine der tiefsten Fragen der Menschheit. Die Wahrheit liegt oft in der Spannung zwischen dem Bekannten und dem Unbekannten.",
+        "health modell": "Die Weite des Universums hat möglicherweise Einfluss auf die menschliche Gesundheit, zum Beispiel durch kosmische Strahlung.",
+        "allgemein": "Das Universum ist so groß, dass unser Verstand es kaum erfassen kann. Es bleibt ein großes Rätsel, das uns immer wieder zum Staunen bringt."
     }
 
-    # Fallback, falls specialty unbekannt ist
+    # Fallback
     if specialty not in responses:
-        return f"Das Universum ist unvorstellbar groß und voller Geheimnisse. Deine Frage '{query}' führt uns tief in diese Rätsel hinein."
+        return "Das Universum ist unvorstellbar groß und voller Geheimnisse."
 
     return responses[specialty]
-
-
-# Test
-if __name__ == "__main__":
-    print(cosmic_search("Wie groß ist das Universum?", "quantenphysik"))
