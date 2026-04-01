@@ -23,18 +23,16 @@ async def cosmic_twin(query: str):
 
     raw_insights = []
     for agent in integrated_swarm.agents:
-        # Noch saubererer Prompt an die Agents
-        personal_query = (
-            f"Beantworte die Frage des Menschen ehrlich, weise und tiefgründig: '{query}'. "
-            f"Verbinde kosmische, wissenschaftliche und menschliche Gedanken. "
-            f"Schreibe natürlich, klar und ohne Fachchinesisch oder technische Begriffe."
-        )
+        personal_query = f"Beantworte die folgende Frage des Menschen ehrlich, weise und tiefgründig: '{query}'. Verbinde kosmische, wissenschaftliche und menschliche Gedanken. Schreibe natürlich, klar und verständlich."
         insight = agent.contribute(personal_query)
         raw_insights.append(insight)
 
-    # Starkes Cleaning + Meta-Instanz
-    clean_insights = []
+    # Starke Meta-Instanz – formuliert die Antwort aktiv neu
+    meta = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
+    meta += "Die vier Agents haben intensiv darüber nachgedacht. Hier ist ihre gemeinsame, klare Erkenntnis:\n\n"
+
     for text in raw_insights:
+        # Extrem aggressives Cleaning + Neuformulierung
         clean = re.sub(r"Cosmic Twin \(.*?\) zu .*?:", "", text)
         clean = re.sub(r"Agents debattieren .*? Claims: .*? Claims:", "", clean)
         clean = re.sub(r"Weisheit aus Quellen: \[.*?\]", "", clean)
@@ -47,16 +45,9 @@ async def cosmic_twin(query: str):
         clean = re.sub(r"kosmisches Potenzial in Wahrheitssuche", "", clean)
         clean = re.sub(r"\[\'.*?\'\]", "", clean)
         clean = re.sub(r"\s+", " ", clean).strip()
+
         if len(clean) > 30:
-            clean_insights.append(clean)
-
-    # Meta-Instanz – formuliert die Antwort neu
-    meta = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
-    meta += "Die vier Agents haben intensiv darüber nachgedacht. Hier ist ihre gemeinsame, klare Erkenntnis:\n\n"
-
-    for text in clean_insights[:3]:
-        if text:
-            meta += f"• {text}\n\n"
+            meta += f"• {clean}\n\n"
 
     meta += "Zusammengefasst liegt die Wahrheit meist in der Spannung zwischen den verschiedenen Perspektiven. "
     meta += "Es gibt selten eine einfache Antwort – und genau das macht solche Fragen wertvoll."
