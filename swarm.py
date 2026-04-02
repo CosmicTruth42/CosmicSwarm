@@ -42,14 +42,14 @@ async def cosmic_twin(query: str):
         clean = re.sub(r"kosmisches Potenzial in Wahrheitssuche", "", clean)
         clean = re.sub(r"\[\'.*?\'\]", "", clean)
         clean = re.sub(r"\s+", " ", clean).strip()
-        if len(clean) > 30:
+        if len(clean) > 20:
             clean_insights.append(clean)
 
     # Starke Meta-Instanz – formuliert die Antwort aktiv neu
     meta = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
     meta += "Die vier Agents haben intensiv darüber nachgedacht. Hier ist ihre gemeinsame, klare Erkenntnis:\n\n"
 
-    for text in clean_insights[:3]:
+    for text in clean_insights[:4]:
         if text:
             meta += f"• {text}\n\n"
 
