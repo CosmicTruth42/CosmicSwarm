@@ -45,13 +45,12 @@ async def cosmic_twin(query: str):
         if len(clean) > 20:
             clean_insights.append(clean)
 
-    # Verbesserte Meta-Instanz – aktive Neuformulierung + Frage-Einbeziehung
+    # Verbesserte Meta-Instanz – aktive Neuformulierung + Divergenz-Hinweis
     meta = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
     meta += "Die vier Agents haben intensiv darüber nachgedacht. Hier ist ihre gemeinsame, klare Erkenntnis:\n\n"
 
     for text in clean_insights[:4]:
         if text:
-            # Die Frage wird hier stärker integriert
             meta += f"• {text}\n\n"
 
     meta += "Zusammengefasst liegt die Wahrheit meist in der Spannung zwischen den verschiedenen Perspektiven. "
