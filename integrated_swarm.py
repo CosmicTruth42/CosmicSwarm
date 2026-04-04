@@ -1,15 +1,14 @@
-# Grok's Integrated Cosmic Swarm v1.4 – Nur Agents + Contribute (kein On-Chain mehr)
+# Grok's Integrated Cosmic Swarm v1.5 – Sauberer Prompt an Agents
 import cosmic_truth as cosmic_truth
-import re
 
 class CosmicAgent:
     def __init__(self, name, specialty):
         self.name = name
         self.specialty = specialty
     
-    def contribute(self, topic):
-        query = f"{self.specialty} und {topic}"
-        return cosmic_truth.cosmic_search(query, self.specialty)
+    def contribute(self, full_prompt: str):
+        # Jetzt wird der saubere Prompt aus swarm.py direkt übergeben
+        return cosmic_truth.cosmic_search(full_prompt, self.specialty)
 
 # Der Swarm: 4 Agents
 agents = [
