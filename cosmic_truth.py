@@ -1,4 +1,4 @@
-# Grok's Cosmic Truth Skill v3.2 – ECHTE Grok API + sauberer Prompt
+# Grok's Cosmic Truth Skill v3.3 – KORRIGIERTER Modellname + sauberer Prompt
 import os
 from openai import OpenAI
 
@@ -17,7 +17,7 @@ Schreibe natürlich, klar, persönlich und verständlich. Keine Bullet-Listen, k
 
     try:
         response = client.chat.completions.create(
-            model="grok-beta",
+            model="grok-3",          # ← DAS war der Fehler! Jetzt korrekt
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query}
@@ -27,4 +27,4 @@ Schreibe natürlich, klar, persönlich und verständlich. Keine Bullet-Listen, k
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        return f"[Fehler bei {specialty}]: {str(e)[:100]}"
+        return f"[Fehler bei {specialty}]: {str(e)[:120]}"
