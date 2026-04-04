@@ -8,10 +8,6 @@ client = OpenAI(
 )
 
 def cosmic_search(query: str, specialty: str) -> str:
-    """
-    Echter Grok-Aufruf für jeden Agenten.
-    Der 'query' Parameter ist jetzt der saubere User-Prompt.
-    """
     system_prompt = f"""
 Du bist der {specialty.upper()}-Agent im CosmicTruth42-System.
 Deine Aufgabe: Antworte ehrlich, tiefgründig und maximal frage-spezifisch auf die folgende Frage des Menschen.
@@ -21,7 +17,7 @@ Schreibe natürlich, klar, persönlich und verständlich. Keine Bullet-Listen, k
 
     try:
         response = client.chat.completions.create(
-            model="grok-beta",          # oder "grok-3" falls du den neueren hast
+            model="grok-beta",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query}
