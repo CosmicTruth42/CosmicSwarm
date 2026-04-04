@@ -45,7 +45,7 @@ async def cosmic_twin(query: str):
         if len(clean) > 20:
             clean_insights.append(clean)
 
-    # Verbesserte Meta-Instanz – formuliert aktiv neu und bewahrt Spannung
+    # Verbesserte Meta-Instanz – aktive Neuformulierung
     meta = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
     meta += "Die vier Agents haben intensiv darüber nachgedacht. Hier ist ihre gemeinsame, klare Erkenntnis:\n\n"
 
@@ -54,7 +54,7 @@ async def cosmic_twin(query: str):
             meta += f"• {text}\n\n"
 
     meta += "Zusammengefasst liegt die Wahrheit meist in der Spannung zwischen den verschiedenen Perspektiven. "
-    meta += "Es gibt selten eine einfache Antwort – und genau das macht solche Fragen wertvoll."
+    meta += "Es gibt selten eine einfache, endgültige Antwort – und genau das macht solche Fragen wertvoll."
 
     signature = onchain.log_consensus(meta)
 
