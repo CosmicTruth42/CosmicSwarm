@@ -51,6 +51,7 @@ async def cosmic_twin(query: str):
 
     for text in clean_insights[:4]:
         if text:
+            # Die Frage wird hier stärker integriert
             meta += f"• {text}\n\n"
 
     meta += "Zusammengefasst liegt die Wahrheit meist in der Spannung zwischen den verschiedenen Perspektiven. "
