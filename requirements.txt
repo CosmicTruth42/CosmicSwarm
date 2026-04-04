@@ -5,3 +5,4 @@ requests
 solders
 solana
 base58
+openai>=1.0.0
