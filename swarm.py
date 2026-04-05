@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import integrated_swarm
+import asyncio
 import re
 from onchain_logger import OnChainLogger
 
@@ -16,62 +17,75 @@ app.add_middleware(
 
 onchain = OnChainLogger()
 
+async def collect_initial(query: str):
+    tasks = [asyncio.to_thread(agent.contribute, f"Beantworte ehrlich und tiefgründig: '{query}'") for agent in integrated_swarm.agents]
+    return await asyncio.gather(*tasks)
+
+async def run_critiques(initial_responses: list):
+    critiques = []
+    combined = "\n\n".join([f"{agent.name}: {resp}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
+    for agent in integrated_swarm.agents:
+        prompt = f"""
+Du siehst die Antworten der anderen Agents:
+{combined}
+
+Kritisiere kritisch und ehrlich: Wo siehst du Schwächen, Widersprüche oder fehlende Aspekte?
+Sei konstruktiv, aber direkt.
+"""
+        critiques.append(await asyncio.to_thread(agent.contribute, prompt))
+    return critiques
+
+def build_strong_meta(query: str, initial: list, critiques: list, revised: list):
+    meta = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
+    meta += "Die vier Agents haben in mehreren Runden miteinander debattiert.\n\n"
+
+    for i, agent in enumerate(integrated_swarm.agents):
+        meta += f"**{agent.name} (Finale Position):**\n{revised[i]}\n\n"
+
+    meta += "**Epistemische Spannung:**\n"
+    meta += "Die Wahrheit entsteht nicht durch Einigkeit, sondern durch die kontrollierte Kollision dieser Perspektiven.\n"
+    meta += "Es gibt keine einfache, endgültige Antwort – und genau das macht die Frage wertvoll."
+
+    return meta
+
 @app.get("/twin")
 async def cosmic_twin(query: str):
     if not query or len(query.strip()) < 3:
         return {"error": "Bitte gib eine sinnvolle Frage ein."}
 
-    # === 1. Roh-Antworten der Agents ===
-    raw_insights = []
-    for agent in integrated_swarm.agents:
-        personal_query = f"Beantworte die folgende Frage des Menschen ehrlich, weise und tiefgründig: '{query}'."
-        insight = agent.contribute(personal_query)
-        raw_insights.append(insight)
+    # Phase 1: Initial
+    initial = await collect_initial(query)
 
-    # === 2. Starkes Cleaning (deine bestehende Logik behalten + leicht verbessert) ===
-    clean_insights = []
-    for text in raw_insights:
-        clean = re.sub(r"Cosmic Twin \(.*?\) zu .*?:", "", text, flags=re.IGNORECASE)
-        clean = re.sub(r"Agents debattieren .*? Claims: .*? Claims:", "", clean)
-        clean = re.sub(r"Weisheit aus Quellen: \[.*?\]", "", clean)
-        clean = re.sub(r"Abstracts: \[.*?\]", "", clean)
-        clean = re.sub(r"Validation: .*?– niedrige Entropie\.", "", clean)
-        clean = re.sub(r"\s+", " ", clean).strip()
-        if len(clean) > 30:
-            clean_insights.append(clean)
+    # Phase 2: Critique
+    critiques = await run_critiques(initial)
 
-    # === 3. Starke, aktive Meta-Instanz (weniger Glättung, mehr Divergenz) ===
-    meta = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
-    meta += "Die vier spezialisierten Agents haben unabhängig darüber nachgedacht. Hier ihre Perspektiven:\n\n"
+    # Phase 3: Revision (jeder Agent überarbeitet seine Antwort)
+    revised = []
+    for i, agent in enumerate(integrated_swarm.agents):
+        prompt = f"""
+Deine ursprüngliche Antwort war:
+{initial[i]}
 
-    for i, text in enumerate(clean_insights[:4]):
-        agent_name = integrated_swarm.agents[i].name if i < len(integrated_swarm.agents) else f"Agent {i+1}"
-        meta += f"**{agent_name}**: {text}\n\n"
+Hier die Kritik der anderen Agents:
+{'\n\n'.join(critiques)}
 
-    meta += "Die Wahrheit entsteht in der **Spannung** zwischen diesen Perspektiven. "
-    meta += "Es gibt keine einfache, endgültige Antwort – und genau das ist der Wert dieser Frage."
+Überarbeite deine Antwort jetzt. Nimm die Kritik ernst, ändere deine Position wenn nötig und erkläre warum.
+"""
+        revised.append(await asyncio.to_thread(agent.contribute, prompt))
 
-    signature = onchain.log_consensus(meta)
+    # Starke Meta
+    consensus = build_strong_meta(query, initial, critiques, revised)
+
+    signature = onchain.log_consensus(consensus)
 
     return {
         "query": query,
-        "insights": raw_insights,      # für Debugging
-        "consensus": meta.strip(),
-        "avgFit": 88,                  # später echte Metrik
+        "initial": initial,
+        "critiques": critiques,
+        "revised": revised,
+        "consensus": consensus,
+        "avgFit": 88,           # später echte Divergenz-Metrik
         "hash": signature
-    }
-
-@app.get("/swarm")
-async def get_swarm():
-    # Test-Endpoint bleibt erstmal gleich
-    topic = "ist dark energy konstant?"
-    insights = [agent.contribute(topic) for agent in integrated_swarm.agents]
-    return {
-        "topic": topic,
-        "insights": insights,
-        "consensus": "Starke Evidenz für evolvierende Dark Energy (basierend auf Kollision)",
-        "avgFit": 90,
-        "hash": "test-hash"
     }
 
 if __name__ == "__main__":
