@@ -17,23 +17,25 @@ app.add_middleware(
 
 onchain = OnChainLogger()
 
-# ====================== v2.0 – STRAFFER & SCHNELLER ======================
+# ====================== v2.1 – STRAFFER, DIFFERENZIERTER LOOP ======================
 async def collect_initial(query: str):
-    tasks = [asyncio.to_thread(agent.contribute, f"Beantworte kurz und tief (max 100 Wörter): '{query}'") for agent in integrated_swarm.agents]
+    tasks = [asyncio.to_thread(agent.contribute, 
+             f"Beantworte kurz und tief aus deiner Fachperspektive (max 90 Wörter): '{query}'") 
+             for agent in integrated_swarm.agents]
     return await asyncio.gather(*tasks)
 
 async def run_critiques(initial_responses: list):
     critiques = []
-    combined = "\n\n".join([f"{agent.name}: {resp[:150]}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
+    combined = "\n\n".join([f"{agent.name}: {resp[:160]}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
     for agent in integrated_swarm.agents:
-        prompt = f"Antworten der anderen:\n{combined}\n\nKurze, direkte Kritik (max 40 Wörter): Was ist schwach oder widersprüchlich?"
+        prompt = f"Antworten der anderen:\n{combined}\n\nKurze Kritik (max 45 Wörter): Was ist schwach, widersprüchlich oder fehlt aus deiner Fachperspektive?"
         critiques.append(await asyncio.to_thread(agent.contribute, prompt))
     return critiques
 
 async def run_revision(initial: list, critiques: list):
     revised = []
     for i, agent in enumerate(integrated_swarm.agents):
-        prompt = f"Original:\n{initial[i]}\n\nKritik:\n{'\n\n'.join(critiques)}\n\nÜberarbeite jetzt kurz und natürlich (max 110 Wörter)."
+        prompt = f"Original:\n{initial[i]}\n\nKritik der anderen:\n{'\n\n'.join(critiques)}\n\nÜberarbeite jetzt. Ändere deine Position, wenn die Kritik überzeugt. Sei kurz und natürlich (max 100 Wörter)."
         revised.append(await asyncio.to_thread(agent.contribute, prompt))
     return revised
 
@@ -80,7 +82,7 @@ async def get_swarm():
     return {
         "topic": topic,
         "insights": insights,
-        "consensus": "Kritik-Loop v2.0 aktiv",
+        "consensus": "Kritik-Loop v2.1 aktiv",
         "avgFit": 88,
         "hash": "loop-test"
     }
