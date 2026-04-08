@@ -17,34 +17,34 @@ app.add_middleware(
 
 onchain = OnChainLogger()
 
-# ====================== v1.9 – SEHR KURZE & DIREKTE PROMTS ======================
+# ====================== v2.0 – STRAFFER & SCHNELLER ======================
 async def collect_initial(query: str):
-    tasks = [asyncio.to_thread(agent.contribute, f"Beantworte die Frage kurz und tiefgründig (max 120 Wörter): '{query}'") for agent in integrated_swarm.agents]
+    tasks = [asyncio.to_thread(agent.contribute, f"Beantworte kurz und tief (max 100 Wörter): '{query}'") for agent in integrated_swarm.agents]
     return await asyncio.gather(*tasks)
 
 async def run_critiques(initial_responses: list):
     critiques = []
-    combined = "\n\n".join([f"{agent.name}: {resp[:180]}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
+    combined = "\n\n".join([f"{agent.name}: {resp[:150]}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
     for agent in integrated_swarm.agents:
-        prompt = f"Antworten der anderen:\n{combined}\n\nKurze Kritik (max 60 Wörter): Was ist schwach oder widersprüchlich?"
+        prompt = f"Antworten der anderen:\n{combined}\n\nKurze, direkte Kritik (max 40 Wörter): Was ist schwach oder widersprüchlich?"
         critiques.append(await asyncio.to_thread(agent.contribute, prompt))
     return critiques
 
 async def run_revision(initial: list, critiques: list):
     revised = []
     for i, agent in enumerate(integrated_swarm.agents):
-        prompt = f"Original:\n{initial[i]}\n\nKritik:\n{'\n\n'.join(critiques)}\n\nÜberarbeite jetzt kurz und präzise (max 140 Wörter)."
+        prompt = f"Original:\n{initial[i]}\n\nKritik:\n{'\n\n'.join(critiques)}\n\nÜberarbeite jetzt kurz und natürlich (max 110 Wörter)."
         revised.append(await asyncio.to_thread(agent.contribute, prompt))
     return revised
 
 def build_meta(query: str, revised: list):
     meta = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
-    meta += "Die Agents haben in 3 Runden debattiert (Initial → Kritik → Revision).\n\n"
+    meta += "Die vier Agents haben in 3 Runden debattiert (Initial → Kritik → Revision).\n\n"
     
     for i, agent in enumerate(integrated_swarm.agents):
         meta += f"**{agent.name} (final):** {revised[i]}\n\n"
     
-    meta += "**Epistemische Spannung:** Die Wahrheit entsteht in der kontrollierten Reibung.\n"
+    meta += "**Epistemische Spannung:** Die Wahrheit entsteht in der kontrollierten Reibung dieser Perspektiven.\n"
     meta += "**Nächste Forschungsfrage:** Was wäre der nächste logische Test dieser Spannung?"
     
     return meta
@@ -80,7 +80,7 @@ async def get_swarm():
     return {
         "topic": topic,
         "insights": insights,
-        "consensus": "Kritik-Loop v1.9 aktiv",
+        "consensus": "Kritik-Loop v2.0 aktiv",
         "avgFit": 88,
         "hash": "loop-test"
     }
