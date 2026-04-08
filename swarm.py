@@ -17,23 +17,23 @@ app.add_middleware(
 
 onchain = OnChainLogger()
 
-# ====================== OPTIMIERTE KRITIK-LOOP ======================
+# ====================== v1.8 – OPTIMIERTE, KURZE PROMTS ======================
 async def collect_initial(query: str):
-    tasks = [asyncio.to_thread(agent.contribute, f"Beantworte kurz und tiefgründig: '{query}'") for agent in integrated_swarm.agents]
+    tasks = [asyncio.to_thread(agent.contribute, f"Beantworte kurz und tief: '{query}'") for agent in integrated_swarm.agents]
     return await asyncio.gather(*tasks)
 
 async def run_critiques(initial_responses: list):
     critiques = []
-    combined = "\n\n".join([f"{agent.name}: {resp[:300]}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
+    combined = "\n\n".join([f"{agent.name}: {resp[:250]}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
     for agent in integrated_swarm.agents:
-        prompt = f"Du siehst die Antworten der anderen Agents:\n{combined}\n\nKritisiere kurz und ehrlich: Was ist schwach, widersprüchlich oder fehlt?"
+        prompt = f"Antworten der anderen:\n{combined}\n\nKurze Kritik: Was ist schwach oder widersprüchlich?"
         critiques.append(await asyncio.to_thread(agent.contribute, prompt))
     return critiques
 
 async def run_revision(initial: list, critiques: list):
     revised = []
     for i, agent in enumerate(integrated_swarm.agents):
-        prompt = f"Deine ursprüngliche Antwort:\n{initial[i]}\n\nKritik der anderen:\n{'\n\n'.join(critiques)}\n\nÜberarbeite deine Antwort jetzt kurz."
+        prompt = f"Original:\n{initial[i]}\n\nKritik:\n{'\n\n'.join(critiques)}\n\nÜberarbeite kurz und präzise."
         revised.append(await asyncio.to_thread(agent.contribute, prompt))
     return revised
 
@@ -44,8 +44,8 @@ def build_meta(query: str, revised: list):
     for i, agent in enumerate(integrated_swarm.agents):
         meta += f"**{agent.name} (final):** {revised[i]}\n\n"
     
-    meta += "**Epistemische Spannung:** Die Wahrheit entsteht in der kontrollierten Reibung dieser Perspektiven.\n"
-    meta += "**Nächste Forschungsfrage:** Was wäre der nächste logische Versuch, diese Spannung empirisch zu testen?"
+    meta += "**Epistemische Spannung:** Die Wahrheit entsteht in der kontrollierten Reibung.\n"
+    meta += "**Nächste Forschungsfrage:** Was wäre der nächste logische Test dieser Spannung?"
     
     return meta
 
@@ -62,10 +62,9 @@ async def cosmic_twin(query: str):
     consensus = build_meta(query, revised)
     signature = onchain.log_consensus(consensus)
 
-    # Rückwärtskompatibel für das alte Frontend
     return {
         "query": query,
-        "insights": revised,          # wichtig für Frontend .map()
+        "insights": revised,
         "consensus": consensus,
         "initial": initial,
         "critiques": critiques,
@@ -74,7 +73,6 @@ async def cosmic_twin(query: str):
         "hash": signature
     }
 
-# Alter /swarm Endpoint (Sicherheit)
 @app.get("/swarm")
 async def get_swarm():
     topic = "ist dark energy konstant?"
@@ -82,7 +80,7 @@ async def get_swarm():
     return {
         "topic": topic,
         "insights": insights,
-        "consensus": "Kritik-Loop aktiv – Spannung wird sichtbar",
+        "consensus": "Kritik-Loop v1.8 aktiv",
         "avgFit": 88,
         "hash": "loop-test"
     }
