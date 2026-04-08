@@ -17,23 +17,23 @@ app.add_middleware(
 
 onchain = OnChainLogger()
 
-# ====================== v1.8 – OPTIMIERTE, KURZE PROMTS ======================
+# ====================== v1.9 – SEHR KURZE & DIREKTE PROMTS ======================
 async def collect_initial(query: str):
-    tasks = [asyncio.to_thread(agent.contribute, f"Beantworte kurz und tief: '{query}'") for agent in integrated_swarm.agents]
+    tasks = [asyncio.to_thread(agent.contribute, f"Beantworte die Frage kurz und tiefgründig (max 120 Wörter): '{query}'") for agent in integrated_swarm.agents]
     return await asyncio.gather(*tasks)
 
 async def run_critiques(initial_responses: list):
     critiques = []
-    combined = "\n\n".join([f"{agent.name}: {resp[:250]}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
+    combined = "\n\n".join([f"{agent.name}: {resp[:180]}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
     for agent in integrated_swarm.agents:
-        prompt = f"Antworten der anderen:\n{combined}\n\nKurze Kritik: Was ist schwach oder widersprüchlich?"
+        prompt = f"Antworten der anderen:\n{combined}\n\nKurze Kritik (max 60 Wörter): Was ist schwach oder widersprüchlich?"
         critiques.append(await asyncio.to_thread(agent.contribute, prompt))
     return critiques
 
 async def run_revision(initial: list, critiques: list):
     revised = []
     for i, agent in enumerate(integrated_swarm.agents):
-        prompt = f"Original:\n{initial[i]}\n\nKritik:\n{'\n\n'.join(critiques)}\n\nÜberarbeite kurz und präzise."
+        prompt = f"Original:\n{initial[i]}\n\nKritik:\n{'\n\n'.join(critiques)}\n\nÜberarbeite jetzt kurz und präzise (max 140 Wörter)."
         revised.append(await asyncio.to_thread(agent.contribute, prompt))
     return revised
 
@@ -80,7 +80,7 @@ async def get_swarm():
     return {
         "topic": topic,
         "insights": insights,
-        "consensus": "Kritik-Loop v1.8 aktiv",
+        "consensus": "Kritik-Loop v1.9 aktiv",
         "avgFit": 88,
         "hash": "loop-test"
     }
