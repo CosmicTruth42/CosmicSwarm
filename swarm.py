@@ -17,35 +17,39 @@ app.add_middleware(
 
 onchain = OnChainLogger()
 
-# ====================== NEUER KRITIK-LOOP ======================
+# ====================== OPTIMIERTE KRITIK-LOOP ======================
 async def collect_initial(query: str):
-    tasks = [asyncio.to_thread(agent.contribute, f"Beantworte ehrlich und tiefgründig: '{query}'") for agent in integrated_swarm.agents]
+    tasks = [asyncio.to_thread(agent.contribute, f"Beantworte kurz und tiefgründig: '{query}'") for agent in integrated_swarm.agents]
     return await asyncio.gather(*tasks)
 
 async def run_critiques(initial_responses: list):
     critiques = []
-    combined = "\n\n".join([f"{agent.name}: {resp}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
+    combined = "\n\n".join([f"{agent.name}: {resp[:300]}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
     for agent in integrated_swarm.agents:
-        prompt = f"Du siehst die Antworten der anderen:\n{combined}\n\nKritisiere kritisch und ehrlich: Wo siehst du Schwächen, Widersprüche oder fehlende Aspekte?"
+        prompt = f"Du siehst die Antworten der anderen Agents:\n{combined}\n\nKritisiere kurz und ehrlich: Was ist schwach, widersprüchlich oder fehlt?"
         critiques.append(await asyncio.to_thread(agent.contribute, prompt))
     return critiques
 
 async def run_revision(initial: list, critiques: list):
     revised = []
     for i, agent in enumerate(integrated_swarm.agents):
-        prompt = f"Deine ursprüngliche Antwort:\n{initial[i]}\n\nKritik der anderen:\n{'\n\n'.join(critiques)}\n\nÜberarbeite deine Antwort jetzt."
+        prompt = f"Deine ursprüngliche Antwort:\n{initial[i]}\n\nKritik der anderen:\n{'\n\n'.join(critiques)}\n\nÜberarbeite deine Antwort jetzt kurz."
         revised.append(await asyncio.to_thread(agent.contribute, prompt))
     return revised
 
 def build_meta(query: str, revised: list):
     meta = f"**Cosmic Twin zu deiner Frage:** „{query}“\n\n"
-    meta += "Die Agents haben in 3 Runden miteinander debattiert (Initial → Kritik → Revision).\n\n"
+    meta += "Die Agents haben in 3 Runden debattiert (Initial → Kritik → Revision).\n\n"
+    
     for i, agent in enumerate(integrated_swarm.agents):
         meta += f"**{agent.name} (final):** {revised[i]}\n\n"
-    meta += "Die Wahrheit entsteht in der **Spannung** zwischen diesen Perspektiven."
+    
+    meta += "**Epistemische Spannung:** Die Wahrheit entsteht in der kontrollierten Reibung dieser Perspektiven.\n"
+    meta += "**Nächste Forschungsfrage:** Was wäre der nächste logische Versuch, diese Spannung empirisch zu testen?"
+    
     return meta
 
-# ====================== HAUPT-ENDPOINT (neu) ======================
+# ====================== HAUPT-ENDPOINT ======================
 @app.get("/twin")
 async def cosmic_twin(query: str):
     if not query or len(query.strip()) < 3:
@@ -58,27 +62,27 @@ async def cosmic_twin(query: str):
     consensus = build_meta(query, revised)
     signature = onchain.log_consensus(consensus)
 
+    # Rückwärtskompatibel für das alte Frontend
     return {
         "query": query,
+        "insights": revised,          # wichtig für Frontend .map()
+        "consensus": consensus,
         "initial": initial,
         "critiques": critiques,
         "revised": revised,
-        "consensus": consensus,
         "avgFit": 88,
         "hash": signature
     }
 
-# ====================== ALTER ENDPOINT (für Dashboard-Kompatibilität) ======================
+# Alter /swarm Endpoint (Sicherheit)
 @app.get("/swarm")
 async def get_swarm():
-    """Temporärer Wrapper – damit das alte Dashboard weiterhin funktioniert"""
-    # Einfache Test-Antwort für den alten Endpoint
     topic = "ist dark energy konstant?"
     insights = [agent.contribute(topic) for agent in integrated_swarm.agents]
     return {
         "topic": topic,
         "insights": insights,
-        "consensus": "Starke Evidenz für evolvierende Dark Energy (Kritik-Loop aktiv)",
+        "consensus": "Kritik-Loop aktiv – Spannung wird sichtbar",
         "avgFit": 88,
         "hash": "loop-test"
     }
