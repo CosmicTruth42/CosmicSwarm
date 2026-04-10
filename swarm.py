@@ -17,7 +17,7 @@ app.add_middleware(
 
 onchain = OnChainLogger()
 
-# ====================== v2.4 – SCHÄRFER, MEHR ECHTE SPANNUNG ======================
+# ====================== v2.5 – CLAIM-ZWANG + FORCED COMMITMENT ======================
 async def collect_initial(query: str):
     tasks = [asyncio.to_thread(agent.contribute, 
              f"Beantworte aus deiner Fachperspektive kurz und direkt (max 70 Wörter): '{query}'") 
@@ -26,16 +26,37 @@ async def collect_initial(query: str):
 
 async def run_critiques(initial_responses: list):
     critiques = []
-    combined = "\n\n".join([f"{agent.name}: {resp[:130]}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
+    combined = "\n\n".join([f"{agent.name}: {resp[:150]}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
     for agent in integrated_swarm.agents:
-        prompt = f"Antworten der anderen:\n{combined}\n\nSei direkt und kritisch (max 40 Wörter): Wo siehst du echte Schwächen, Widersprüche oder fehlende Aspekte aus deiner Fachperspektive?"
+        prompt = f"""
+Antworten der anderen:
+{combined}
+
+Aufgabe:
+1. Extrahiere genau 1 zentrale Behauptung eines anderen Agents.
+2. Greife diese konkret an (logischer Fehler, fehlende Annahme oder Gegenbeispiel).
+Max 40 Wörter. Sei direkt.
+"""
         critiques.append(await asyncio.to_thread(agent.contribute, prompt))
     return critiques
 
 async def run_revision(initial: list, critiques: list):
     revised = []
     for i, agent in enumerate(integrated_swarm.agents):
-        prompt = f"Original:\n{initial[i]}\n\nKritik der anderen:\n{'\n\n'.join(critiques)}\n\nÜberarbeite jetzt. Ändere deine Position, wo die Kritik stark ist. Sei direkt, natürlich und kontrovers, wenn nötig (max 80 Wörter)."
+        prompt = f"""
+Original:
+{initial[i]}
+
+Kritik der anderen:
+{'\n\n'.join(critiques)}
+
+Aufgabe:
+1. Nenne 1 Punkt, wo du deine Meinung änderst.
+2. Nenne 1 Punkt, wo du weiterhin widersprichst.
+3. Formuliere deine finale Position klar.
+
+Max 80 Wörter. Sei direkt und natürlich.
+"""
         revised.append(await asyncio.to_thread(agent.contribute, prompt))
     return revised
 
@@ -46,7 +67,8 @@ def build_meta(query: str, revised: list):
     for i, agent in enumerate(integrated_swarm.agents):
         meta += f"**{agent.name} (final):** {revised[i]}\n\n"
     
-    meta += "**Epistemische Spannung:** Die Wahrheit entsteht in der kontrollierten Reibung dieser Perspektiven.\n"
+    meta += "**Epistemische Spannung:**\n"
+    meta += "Die Wahrheit entsteht in der kontrollierten Reibung dieser Perspektiven.\n\n"
     meta += "**Nächste Forschungsfrage:** Was wäre der nächste logische Test dieser Spannung?"
     
     return meta
@@ -82,7 +104,7 @@ async def get_swarm():
     return {
         "topic": topic,
         "insights": insights,
-        "consensus": "Kritik-Loop v2.4 aktiv",
+        "consensus": "Kritik-Loop v2.5 aktiv",
         "avgFit": 88,
         "hash": "loop-test"
     }
