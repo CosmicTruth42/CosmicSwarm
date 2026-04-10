@@ -17,25 +17,25 @@ app.add_middleware(
 
 onchain = OnChainLogger()
 
-# ====================== v2.2 – NOCH STRAFFER & DIFFERENZIERTER ======================
+# ====================== v2.3 – NOCH STRAFFER + ECHTE POSITIONSÄNDERUNG ======================
 async def collect_initial(query: str):
     tasks = [asyncio.to_thread(agent.contribute, 
-             f"Beantworte aus deiner Fachperspektive kurz und tief (max 80 Wörter): '{query}'") 
+             f"Beantworte aus deiner Fachperspektive kurz und direkt (max 70 Wörter): '{query}'") 
              for agent in integrated_swarm.agents]
     return await asyncio.gather(*tasks)
 
 async def run_critiques(initial_responses: list):
     critiques = []
-    combined = "\n\n".join([f"{agent.name}: {resp[:140]}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
+    combined = "\n\n".join([f"{agent.name}: {resp[:130]}" for agent, resp in zip(integrated_swarm.agents, initial_responses)])
     for agent in integrated_swarm.agents:
-        prompt = f"Antworten der anderen:\n{combined}\n\nKurze Kritik (max 40 Wörter): Finde echte Widersprüche oder fehlende Aspekte aus deiner Fachperspektive."
+        prompt = f"Antworten der anderen:\n{combined}\n\nKurze Kritik (max 35 Wörter): Finde echte Schwächen oder Widersprüche aus deiner Sicht."
         critiques.append(await asyncio.to_thread(agent.contribute, prompt))
     return critiques
 
 async def run_revision(initial: list, critiques: list):
     revised = []
     for i, agent in enumerate(integrated_swarm.agents):
-        prompt = f"Original:\n{initial[i]}\n\nKritik der anderen:\n{'\n\n'.join(critiques)}\n\nÜberarbeite jetzt. Ändere deine Position, wenn die Kritik überzeugt. Sei kurz und natürlich (max 90 Wörter)."
+        prompt = f"Original:\n{initial[i]}\n\nKritik der anderen:\n{'\n\n'.join(critiques)}\n\nÄndere deine Position, wo die Kritik stark ist. Sei kurz, natürlich und direkt (max 80 Wörter)."
         revised.append(await asyncio.to_thread(agent.contribute, prompt))
     return revised
 
@@ -82,7 +82,7 @@ async def get_swarm():
     return {
         "topic": topic,
         "insights": insights,
-        "consensus": "Kritik-Loop v2.2 aktiv",
+        "consensus": "Kritik-Loop v2.3 aktiv",
         "avgFit": 88,
         "hash": "loop-test"
     }
